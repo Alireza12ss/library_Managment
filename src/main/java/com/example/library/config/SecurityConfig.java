@@ -44,6 +44,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/users/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/books/**").authenticated() // Check token but allow all valid users
                                 .requestMatchers(HttpMethod.GET, "/api/book-groups/**").authenticated() // Check token but allow all valid users
+                                .requestMatchers(HttpMethod.POST, "api/book-groups/**").authenticated()
+                                .requestMatchers("api/book-groups/**").hasRole("ADMIN")
                                 .requestMatchers("/api/book-groups/**").hasRole("ADMIN")
                                 .requestMatchers("/api/books/**").hasRole("ADMIN")
                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
