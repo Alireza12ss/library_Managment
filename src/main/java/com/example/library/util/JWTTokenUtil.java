@@ -56,10 +56,14 @@ public class JWTTokenUtil {
                     .setSigningKey(tokenSecret)
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (Exception e) {
-            return null;
+        } catch (ExpiredJwtException e) {
+            System.err.println("JWT has expired: " + e.getMessage());
+        } catch (JwtException e) {
+            System.err.println("JWT validation error: " + e.getMessage());
         }
+        return null;
     }
+
 
     // Check if Token is Expired
     public static boolean isTokenExpired(String token) {
@@ -94,6 +98,12 @@ public class JWTTokenUtil {
             return null;
         }
     }
+
+    public static boolean validateAccessToken(String token) {
+        Claims claims = validateToken(token);
+        return claims != null && !isTokenExpired(token);
+    }
+
 
     // Validate Refresh Token
     public static boolean validateRefreshToken(String refreshToken) {

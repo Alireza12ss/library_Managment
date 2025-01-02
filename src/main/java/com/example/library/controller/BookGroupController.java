@@ -46,4 +46,11 @@ public class BookGroupController {
         bookGroupService.deleteBookGroup(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search/{keyword}")
+    public ResponseEntity<List<BookGroupDto>> searchBookGroups(@PathVariable String keyword) {
+        List<BookGroupDto> bookGroups = bookGroupService.searchBookGroups(keyword);
+        return ResponseEntity.ok(bookGroups);
+    }
+
 }

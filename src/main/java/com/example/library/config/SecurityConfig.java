@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,18 +38,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // Disable CSRF for API endpoints (you can enable it if needed)
+                .csrf(AbstractHttpConfigurer::disable)  // Disable CSRF for API endpoints (you can enable it if needed)
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/users/**").permitAll()// Allow public access to login and register endpoints
-                                .requestMatchers(HttpMethod.GET,"/api/book-groups/**").permitAll()
+                                .requestMatchers("/api/users/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/books/**").authenticated() // Check token but allow all valid users
+                                .requestMatchers(HttpMethod.GET, "/api/book-groups/**").authenticated() // Check token but allow all valid users
                                 .requestMatchers("/api/book-groups/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET,"/api/books/**").permitAll()
                                 .requestMatchers("/api/books/**").hasRole("ADMIN")
+                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                                 .anyRequest().authenticated()  // All other requests require authentication
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);  // Add JWT filter before the authentication filter
-
         return http.build();
     }
 }

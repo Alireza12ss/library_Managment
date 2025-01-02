@@ -7,8 +7,7 @@ import java.util.List;
 
 @Data
 public class BookGroupDto {
-    private Long id;
     private String name;
-    private List<Book> books;
+    private List<BookDto> books;
 }
 

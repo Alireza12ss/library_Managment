@@ -62,6 +62,23 @@ public class BookService {
         return mapToDto(updatedBook);
     }
 
+    public List<BookDto> searchBooks(String keyword) {
+        List<Book> books = bookRepository.findAll();
+        return books.stream()
+                .filter(book -> book.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
+                        book.getAuthor().toLowerCase().contains(keyword.toLowerCase()))
+                .map(this::mapToBookDto)
+                .collect(Collectors.toList());
+    }
+    // Helper method to map Book to BookDto
+    private BookDto mapToBookDto(Book book) {
+        return new BookDto(
+                book.getTitle(),
+                book.getAuthor(),
+                book.getGroup() != null ? book.getGroup().getName() : null
+        );
+    }
+
     // Delete a book by ID
     public void deleteBook(Long id) {
         if (!bookRepository.existsById(id)) {

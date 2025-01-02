@@ -1,6 +1,7 @@
 package com.example.library.controller;
 
 import com.example.library.dto.BookDto;
+import com.example.library.entity.Book;
 import com.example.library.service.BookService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,4 +49,11 @@ public class BookController {
         bookService.deleteBook(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search/{title}")
+    public ResponseEntity<List<BookDto>> searchBooks(@PathVariable String title) {
+        List<BookDto> filteredBooks = bookService.searchBooks(title);
+        return ResponseEntity.ok(filteredBooks);
+    }
+
 }
