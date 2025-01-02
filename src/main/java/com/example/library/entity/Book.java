@@ -1,7 +1,9 @@
 package com.example.library.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "books")
 public class Book {

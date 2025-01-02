@@ -43,6 +43,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/users/**").permitAll()// Allow public access to login and register endpoints
                                 .requestMatchers(HttpMethod.GET,"/api/book-groups/**").permitAll()
                                 .requestMatchers("/api/book-groups/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET,"/api/books/**").permitAll()
+                                .requestMatchers("/api/books/**").hasRole("ADMIN")
                                 .anyRequest().authenticated()  // All other requests require authentication
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);  // Add JWT filter before the authentication filter

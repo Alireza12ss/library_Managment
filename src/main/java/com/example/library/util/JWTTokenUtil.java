@@ -10,7 +10,7 @@ import java.util.function.Function;
 public class JWTTokenUtil {
 
     private static final String tokenSecret = "R07mLKFemnbURK8k5X8DRvBYGrNZjU60IDs5M2QrYD0=";
-    private static final long accessTokenExpiration = 15 * 60 * 1000; // 15 minutes
+    private static final long accessTokenExpiration = 60 * 60 * 1000; // 60 minutes
     private static final long refreshTokenExpiration = 7 * 24 * 60 * 60 * 1000; // 7 days
 
     // Generate Access Token
