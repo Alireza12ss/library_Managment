@@ -1,0 +1,17 @@
+package com.example.library.entity;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "books")
+public class Book {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String title;
+    private String author;
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private BookGroup group;
+
+}
