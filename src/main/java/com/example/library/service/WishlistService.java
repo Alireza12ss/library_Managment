@@ -9,8 +9,6 @@ import com.example.library.repository.UserRepository;
 import com.example.library.repository.WishlistRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-
-import java.beans.Transient;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,7 +28,6 @@ public class WishlistService {
         if (wishlistRepository.existsByUserIdAndBookId(userId, bookId)) {
             throw new IllegalArgumentException("Book already in wishlist");
         }
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Book book = bookRepository.findById(bookId)
@@ -60,7 +57,8 @@ public class WishlistService {
         BookDto dto = new BookDto(
                 book.getTitle(),
                 book.getAuthor(),
-                book.getGroup().getName()
+                book.getGroup().getName(),
+                book.getPrice()
         );
         return dto;
     }

@@ -4,7 +4,9 @@ import com.example.library.dto.AuthResponseDto;
 import com.example.library.dto.LoginRequestDto;
 import com.example.library.dto.RefreshTokenRequestDto;
 import com.example.library.dto.RegisterRequestDto;
+import com.example.library.entity.Cart;
 import com.example.library.entity.User;
+import com.example.library.repository.CartRepository;
 import com.example.library.repository.UserRepository;
 import com.example.library.util.JWTTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,9 @@ public class AuthService {
     private UserRepository userRepository;
 
     @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     // Register a new user
@@ -28,6 +33,9 @@ public class AuthService {
         }
         User user = mapToUser(requestDto , (BCryptPasswordEncoder) passwordEncoder);
         userRepository.save(user);
+        Cart cart = new Cart();
+        cart.setUser(user);
+        cartRepository.save(cart);
 
         String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername());
         String refreshToken = JWTTokenUtil.generateRefreshToken(user.getUsername());

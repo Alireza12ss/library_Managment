@@ -45,7 +45,8 @@ public class BookGroupService {
         BookDto dto = new BookDto(
                 book.getTitle(),
                 book.getAuthor(),
-                book.getGroup().getName()
+                book.getGroup().getName(),
+                book.getPrice()
         );
         // Map other fields as necessary
         return dto;

@@ -15,5 +15,6 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "group_id")
     private BookGroup group;
+    private Long price;
 
 }

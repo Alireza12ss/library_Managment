@@ -51,6 +51,7 @@ public class BookService {
 
         existingBook.setTitle(bookDto.getTitle());
         existingBook.setAuthor(bookDto.getAuthor());
+        existingBook.setPrice(bookDto.getPrice());
 
         if (bookDto.getGroup() != null) {
             BookGroup group = bookGroupRepository.findByName(bookDto.getGroup())
@@ -75,7 +76,8 @@ public class BookService {
         return new BookDto(
                 book.getTitle(),
                 book.getAuthor(),
-                book.getGroup() != null ? book.getGroup().getName() : null
+                book.getGroup() != null ? book.getGroup().getName() : null,
+                book.getPrice()
         );
     }
 
@@ -92,7 +94,8 @@ public class BookService {
         return new BookDto(
                 book.getTitle(),
                 book.getAuthor(),
-                book.getGroup().getName()
+                book.getGroup().getName(),
+                book.getPrice()
         );
     }
 
