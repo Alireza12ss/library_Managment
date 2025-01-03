@@ -25,7 +25,7 @@ public class User {
     private String role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<WishList> wishLists = new ArrayList<>();
+    private List<Wishlist> wishLists = new ArrayList<>();
 
 
 }

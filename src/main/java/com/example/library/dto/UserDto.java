@@ -1,7 +1,6 @@
 package com.example.library.dto;
 
-import com.example.library.entity.WishList;
-import jakarta.persistence.*;
+import com.example.library.entity.Wishlist;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,5 +11,5 @@ public class UserDto {
     private String username;
     private String password;
     private String role;
-    private List<WishList> wishLists = new ArrayList<>();
+    private List<Wishlist> wishLists = new ArrayList<>();
 }

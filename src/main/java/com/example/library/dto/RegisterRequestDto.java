@@ -1,10 +1,6 @@
 package com.example.library.dto;
 
-import com.example.library.entity.WishList;
 import lombok.Getter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 public class RegisterRequestDto {
