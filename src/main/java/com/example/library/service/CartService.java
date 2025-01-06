@@ -7,8 +7,7 @@ import com.example.library.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -41,7 +40,7 @@ public class CartService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Fetch the user's cart
-        Cart cart = cartRepository.findByUserUsername(user.getUsername())
+        Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseGet(() -> {
                     // Create a new cart for the user if none exists
                     Cart newCart = new Cart();
@@ -64,8 +63,6 @@ public class CartService {
         // Save the cart item
         cartItemRepository.save(cartItem);
     }
-
-
 
     // Remove item from cart
     public CartDto removeItemFromCart(Long userId, Long itemId) {
@@ -121,5 +118,12 @@ public class CartService {
                 cartItem.getBook().getPrice(),
                 cartItem.getBook().getPrice() * cartItem.getQuantity()
         );
+    }
+
+    // Get all carts (Admin functionality)
+    public List<CartDto> getAllCarts() {
+        return cartRepository.findAll().stream()
+                .map(this::mapToCartDTO)
+                .collect(Collectors.toList());
     }
 }

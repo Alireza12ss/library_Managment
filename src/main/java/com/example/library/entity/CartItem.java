@@ -15,7 +15,7 @@ public class CartItem {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
+    @JoinColumn(name = "cart_id")
     private Cart cart;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,6 +29,10 @@ public class CartItem {
     private Book book;
 
     private int quantity;
+    @Override
+    public String toString(){
+        return "ok";
+    }
 }
 
 

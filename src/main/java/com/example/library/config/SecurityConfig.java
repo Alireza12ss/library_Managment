@@ -41,15 +41,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)  // Disable CSRF for API endpoints (you can enable it if needed)
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/users/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/books/**").authenticated() // Check token but allow all valid users
-                                .requestMatchers(HttpMethod.GET, "/api/book-groups/**").authenticated() // Check token but allow all valid users
-                                .requestMatchers(HttpMethod.POST, "api/book-groups/**").authenticated()
-                                .requestMatchers("api/book-groups/**").hasRole("ADMIN")
-                                .requestMatchers("/api/book-groups/**").hasRole("ADMIN")
-                                .requestMatchers("/api/books/**").hasRole("ADMIN")
                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
-                                .anyRequest().authenticated()  // All other requests require authentication
+                                .requestMatchers("/v1/user/**").hasAnyRole("ADMIN" , "USER")
+                                .requestMatchers("/v1/admin/**").hasRole("ADMIN")
+                                .requestMatchers("api/users/**").permitAll()
+                                .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);  // Add JWT filter before the authentication filter
         return http.build();

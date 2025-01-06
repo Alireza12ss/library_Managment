@@ -13,7 +13,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/books")
+@RequestMapping("/v1/user/books")
 public class BookController {
 
     @Autowired
@@ -29,25 +29,6 @@ public class BookController {
     public ResponseEntity<BookDto> getBookById(@PathVariable Long id) {
         BookDto book = bookService.getBookById(id);
         return ResponseEntity.ok(book);
-    }
-
-    @PostMapping
-    public ResponseEntity<BookDto> createBook(@RequestBody BookDto bookDto) {
-        BookDto createdBook = bookService.addBook(bookDto);
-        return ResponseEntity.status(201).body(createdBook);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<BookDto> updateBook(@PathVariable Long id, @RequestBody BookDto bookDto) {
-        BookDto updatedBook = bookService.updateBook(id, bookDto);
-        return ResponseEntity.ok(updatedBook);
-    }
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
-        bookService.deleteBook(id);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/search/{title}")

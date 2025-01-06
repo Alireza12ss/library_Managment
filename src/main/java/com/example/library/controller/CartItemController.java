@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/cart-items")
+@RequestMapping("/v1/user/cart-items")
 public class CartItemController {
     @Autowired
     private final CartItemService cartItemService;

@@ -1,6 +1,7 @@
 package com.example.library.service;
 
 import com.example.library.dto.BookDto;
+import com.example.library.dto.WishlistDto;
 import com.example.library.entity.Book;
 import com.example.library.entity.User;
 import com.example.library.entity.Wishlist;
@@ -60,6 +61,25 @@ public class WishlistService {
                 book.getGroup().getName(),
                 book.getPrice()
         );
+        return dto;
+    }
+
+    // Delete wishlist item by wishlistId
+    public void deleteWishlistItem(Long wishlistId) {
+        wishlistRepository.deleteById(wishlistId);
+    }
+
+    // Get all wishlists (for admin)
+    public List<WishlistDto> getAllWishLists() {
+        return wishlistRepository.findAll().stream()
+                .map(this::mapToWishlistDto)
+                .collect(Collectors.toList());
+    }
+
+    private WishlistDto mapToWishlistDto(Wishlist wishlist) {
+        WishlistDto dto = new WishlistDto();
+        dto.setUser(wishlist.getUser().getUsername());
+        dto.setBook(wishlist.getBook().getTitle());
         return dto;
     }
 }

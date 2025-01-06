@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/wishlist")
+@RequestMapping("/v1/user/wishlist")
 public class WishlistController {
     private final WishlistService wishlistService;
     private final UserRepository userRepository;

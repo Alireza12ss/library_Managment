@@ -55,7 +55,7 @@ public class BookGroupService {
 
 
     // Create a new Book Group
-    public BookGroup createBookGroup(BookGroupDto bookGroupDto) {
+    public BookGroupDto createBookGroup(BookGroupDto bookGroupDto) {
         Optional<BookGroup> existingGroup = bookGroupRepository.findByName(bookGroupDto.getName());
         if (existingGroup.isPresent()) {
             throw new IllegalArgumentException("Book group with the same name already exists");
@@ -63,23 +63,24 @@ public class BookGroupService {
 
         BookGroup bookGroup = new BookGroup();
         bookGroup.setName(bookGroupDto.getName());
-
-        return bookGroupRepository.save(bookGroup);
+        return mapToBookGroupDto(bookGroupRepository.save(bookGroup));
     }
 
     // Get all Book Groups
-    public List<BookGroup> getAllBookGroups() {
-        return bookGroupRepository.findAll();
+    // Get all Book Groups and return as DTOs
+    public List<BookGroupDto> getAllBookGroups() {
+        return bookGroupRepository.findAll().stream()
+                .map(this::mapToBookGroupDto) // Map each BookGroup to BookGroupDto
+                .collect(Collectors.toList());
     }
 
     // Update an existing Book Group
-    public BookGroup updateBookGroup(Long id, BookGroupDto bookGroupDto) {
+    public BookGroupDto updateBookGroup(Long id, BookGroupDto bookGroupDto) {
         BookGroup bookGroup = bookGroupRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Book group not found"));
 
         bookGroup.setName(bookGroupDto.getName());
-
-        return bookGroupRepository.save(bookGroup);
+        return mapToBookGroupDto(bookGroupRepository.save(bookGroup));
     }
 
     // Delete a Book Group

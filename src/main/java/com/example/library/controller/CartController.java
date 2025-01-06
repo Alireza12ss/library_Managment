@@ -3,6 +3,7 @@ package com.example.library.controller;
 import com.example.library.config.CustomUserDetails;
 import com.example.library.dto.CartDto;
 import com.example.library.dto.CartItemDto;
+import com.example.library.dto.CartItemReqDto;
 import com.example.library.repository.UserRepository;
 import com.example.library.service.CartService;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/carts")
+@RequestMapping("/v1/user/carts")
 public class CartController {
 
     private final CartService cartService;
@@ -28,8 +29,8 @@ public class CartController {
     }
 
     // Add item to cart
-    @PostMapping("/items")
-    public ResponseEntity<String> addItemToCart(@RequestBody CartItemDto cartItemDTO) {
+    @PostMapping("/items/{itemId}")
+    public ResponseEntity<String> addItemToCart(@RequestBody CartItemReqDto cartItemDTO) {
         String username = getUsernameFromSecurityContext();
         cartService.addItemToCart(username, cartItemDTO.getBookId() , cartItemDTO.getQuantity());
         return ResponseEntity.ok("added succesfully!");

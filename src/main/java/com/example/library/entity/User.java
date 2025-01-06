@@ -27,5 +27,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Wishlist> wishLists = new ArrayList<>();
 
-
+    @Override
+    public String toString(){
+        return "ok";
+    }
 }
