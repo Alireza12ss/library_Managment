@@ -2,6 +2,7 @@ package com.example.library.controller;
 
 import com.example.library.dto.BookGroupDto;
 import com.example.library.service.BookGroupService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,14 +10,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/v1/user/book-groups")
+@AllArgsConstructor
 public class BookGroupController {
 
     private final BookGroupService bookGroupService;
-
-    public BookGroupController(BookGroupService bookGroupService) {
-        this.bookGroupService = bookGroupService;
-    }
-
 
     // Get all Book Groups
     @GetMapping

@@ -2,6 +2,7 @@ package com.example.library.service;
 
 import com.example.library.dto.*;
 import com.example.library.entity.Cart;
+import com.example.library.entity.Role;
 import com.example.library.entity.User;
 import com.example.library.repository.CartRepository;
 import com.example.library.repository.UserRepository;
@@ -31,14 +32,9 @@ public class AuthService {
         if (userRepository.existsByUsername(requestDto.getUsername())){
             throw new RuntimeException("Username already taken");
         }
-        if (!requestDto.getRole().equals("USER")){
-            throw new RuntimeException("Access Denied");
-        }
         User user = mapToUser(requestDto, (BCryptPasswordEncoder) passwordEncoder);
         userRepository.save(user);
-        Cart cart = new Cart();
-        cart.setUser(user);
-        cartRepository.save(cart);
+
         String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername());
         String refreshToken = JWTTokenUtil.generateRefreshToken(user.getUsername());
 
@@ -50,7 +46,7 @@ public class AuthService {
         User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword())); // Encrypt password
-        user.setRole(registerRequest.getRole());
+        user.setRole(Role.USER);
         return user;
     }
 
@@ -102,7 +98,7 @@ public class AuthService {
         UserDto dto = new UserDto();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
-        dto.setRole(user.getRole());
+        dto.setRole(Role.USER);
         return dto;
     }
 }

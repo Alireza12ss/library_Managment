@@ -22,7 +22,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role;
+    private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Wishlist> wishLists = new ArrayList<>();

@@ -6,6 +6,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
-    // Correcting the query to use the book's ID for comparison
-    void deleteByUserAndBook_Id(User user, Long bookId);
 }

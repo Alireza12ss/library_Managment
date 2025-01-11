@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 public class CartService {
     private final CartRepository cartRepository;
     private final BookRepository bookRepository;
-    private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
 
@@ -54,7 +53,6 @@ public class CartService {
 
         // Create a new CartItem and associate it with the cart
         CartItem cartItem = new CartItem();
-        cartItem.setUser(user);
         cartItem.setBook(book);
         cartItem.setQuantity(quantity);
         cartItem.setCart(cart); // Associate with the cart

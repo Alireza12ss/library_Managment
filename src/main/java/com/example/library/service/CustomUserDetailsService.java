@@ -1,5 +1,6 @@
-package com.example.library.config;
+package com.example.library.service;
 
+import com.example.library.config.CustomUserDetails;
 import com.example.library.entity.User;
 import com.example.library.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
