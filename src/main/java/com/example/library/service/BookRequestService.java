@@ -5,21 +5,25 @@ import com.example.library.dto.BookRequestResponse;
 import com.example.library.entity.BookRequest;
 import com.example.library.repository.BookRequestRepository;
 import com.example.library.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class BookRequestService {
+public class BookRequestService extends SuperService {
 
-    @Autowired
-    private BookRequestRepository bookRequestRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private final BookRequestRepository bookRequestRepository;
+    private final UserRepository userRepository;
 
-    public BookRequestResponse createBookRequest(BookRequestDto bookRequestDto, String username) {
+    public BookRequestService(UserRepository userRepository, BookRequestRepository bookRequestRepository, UserRepository userRepository1) {
+        super(userRepository);
+        this.bookRequestRepository = bookRequestRepository;
+        this.userRepository = userRepository1;
+    }
+
+    public BookRequestResponse createBookRequest(BookRequestDto bookRequestDto) {
+        String username = getUsername();
         BookRequest bookRequest = new BookRequest();
         bookRequest.setTitle(bookRequestDto.getTitle());
         bookRequest.setAuthor(bookRequestDto.getAuthor());
@@ -28,11 +32,10 @@ public class BookRequestService {
         bookRequest.setFulfilled(false);
 
         bookRequestRepository.save(bookRequest);
-        BookRequestResponse bookRequestResponse = new BookRequestResponse(
+        return new BookRequestResponse(
                 bookRequest.getTitle(),
                 bookRequest.getAuthor()
         );
-        return bookRequestResponse;
     }
 
     private BookRequestDto mapToBookRequestDto(BookRequest bookRequest) {
@@ -45,7 +48,8 @@ public class BookRequestService {
 
 
 
-    public List<BookRequestDto> getAllBookRequests(String username) {
+    public List<BookRequestDto> getAllBookRequests() {
+        String username = getUsername();
         return bookRequestRepository.findById(
                 userRepository.findByUsername(username).get().getId()
                 ).stream()

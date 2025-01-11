@@ -8,19 +8,30 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor
+
 @Service
-public class CartService {
+public class CartService extends SuperService{
+
     private final CartRepository cartRepository;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
 
+    public CartService(UserRepository userRepository, CartRepository cartRepository,
+                       BookRepository bookRepository, UserRepository userRepository1,
+                       CartItemRepository cartItemRepository) {
+        super(userRepository);
+        this.cartRepository = cartRepository;
+        this.bookRepository = bookRepository;
+        this.userRepository = userRepository1;
+        this.cartItemRepository = cartItemRepository;
+    }
+
     // Get Cart by userId (or create a new cart if not found)
-    public CartDto getCartByUserId(Long userId) {
+    public CartDto getCartByUserId() {
+        Long userId = getCurrentUserId();
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     // Create a new cart if none exists for the user
@@ -33,37 +44,34 @@ public class CartService {
     }
 
     // Add item to cart (create cart if none exists)
-    public void addItemToCart(String username, Long bookId, int quantity) {
-        // Fetch the user by username
+    public void addItemToCart(Long bookId, int quantity) {
+        String username = getUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Fetch the user's cart
         Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseGet(() -> {
-                    // Create a new cart for the user if none exists
                     Cart newCart = new Cart();
                     newCart.setUser(user);
                     return cartRepository.save(newCart);
                 });
 
-        // Fetch the book by ID
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
 
-        // Create a new CartItem and associate it with the cart
         CartItem cartItem = new CartItem();
         cartItem.setBook(book);
         cartItem.setQuantity(quantity);
-        cartItem.setCart(cart); // Associate with the cart
-        cartItem.setOrder(null); // Default order can be null for now
+        cartItem.setCart(cart);
+        cartItem.setOrder(null);
 
         // Save the cart item
         cartItemRepository.save(cartItem);
     }
 
     // Remove item from cart
-    public CartDto removeItemFromCart(Long userId, Long itemId) {
+    public CartDto removeItemFromCart(Long itemId) {
+        Long userId = getCurrentUserId();
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
@@ -82,15 +90,13 @@ public class CartService {
     }
 
     // Clear the cart
-    public void clearCart(Long userId) {
+    public void clearCart() {
+        Long userId = getCurrentUserId();
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
-
-        // Remove and delete all cart items
-        cart.getCartItems().forEach(cartItemRepository::delete);
+        cartItemRepository.deleteAll(cart.getCartItems());
         cart.getCartItems().clear();
 
-        // Save the cart after clearing items
         cartRepository.save(cart);
     }
 

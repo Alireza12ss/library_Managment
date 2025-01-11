@@ -14,18 +14,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class WishlistService {
+public class WishlistService extends SuperService{
     private final WishlistRepository wishlistRepository;
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
 
-    public WishlistService(WishlistRepository wishlistRepository, UserRepository userRepository, BookRepository bookRepository) {
+
+    public WishlistService(UserRepository userRepository, WishlistRepository wishlistRepository,
+                           UserRepository userRepository1, BookRepository bookRepository) {
+        super(userRepository);
         this.wishlistRepository = wishlistRepository;
-        this.userRepository = userRepository;
+        this.userRepository = userRepository1;
         this.bookRepository = bookRepository;
     }
 
-    public void addBookToWishlist(Long userId, Long bookId) {
+    public void addBookToWishlist(Long bookId) {
+        Long userId = getCurrentUserId();
         if (wishlistRepository.existsByUserIdAndBookId(userId, bookId)) {
             throw new IllegalArgumentException("Book already in wishlist");
         }
@@ -41,14 +45,16 @@ public class WishlistService {
     }
 
     @Transactional
-    public void removeBookFromWishlist(Long userId, Long bookId) {
+    public void removeBookFromWishlist(Long bookId) {
+        Long userId = getCurrentUserId();
         if (!wishlistRepository.existsByUserIdAndBookId(userId, bookId)) {
             throw new IllegalArgumentException("Book not in wishlist");
         }
         wishlistRepository.deleteByUserIdAndBookId(userId, bookId);
     }
 
-    public List<BookDto> getUserWishlist(Long userId) {
+    public List<BookDto> getUserWishlist() {
+        Long userId = getCurrentUserId();
         return wishlistRepository.findByUserId(userId).stream()
                 .map(wishlist -> mapToBookDto(wishlist.getBook()))
                 .collect(Collectors.toList());

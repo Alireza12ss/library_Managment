@@ -5,11 +5,9 @@ import com.example.library.dto.OrderDto;
 import com.example.library.entity.Cart;
 import com.example.library.entity.CartItem;
 import com.example.library.entity.Order;
-import com.example.library.entity.User;
 import com.example.library.repository.CartRepository;
 import com.example.library.repository.OrderRepository;
 import com.example.library.repository.UserRepository;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -17,15 +15,23 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor
 @Service
-public class OrderService {
+public class OrderService extends SuperService {
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
+    public OrderService(UserRepository userRepository, CartRepository cartRepository,
+                        OrderRepository orderRepository, UserRepository userRepository1) {
+        super(userRepository);
+        this.cartRepository = cartRepository;
+        this.orderRepository = orderRepository;
+        this.userRepository = userRepository1;
+    }
+
     // Fetch orders by username
-    public List<OrderDto> getOrdersByUsername(String username) {
+    public List<OrderDto> getOrdersByUsername() {
+        String username = getUsername();
         return orderRepository.findByUserUsername(username).stream()
                 .map(this::mapToOrderDTO)
                 .collect(Collectors.toList());
@@ -39,10 +45,10 @@ public class OrderService {
     }
 
     // Place an order using username
-    public OrderDto placeOrder(String username) {
-
+    public OrderDto placeOrder() {
+        String username = getUsername();
         Cart cart = cartRepository.findByUserId(
-                userRepository.findByUsername(username).get().getId()
+                        userRepository.findByUsername(username).get().getId()
                 )
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
