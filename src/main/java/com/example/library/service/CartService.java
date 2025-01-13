@@ -2,6 +2,8 @@ package com.example.library.service;
 
 import com.example.library.dto.CartDto;
 import com.example.library.entity.*;
+import com.example.library.exception.BookNotFoundException;
+import com.example.library.exception.UserNotFoundException;
 import com.example.library.mapper.CartMapper;
 import com.example.library.repository.*;
 import com.example.library.exception.CartNotFoundException;
@@ -47,7 +49,7 @@ public class CartService extends SuperService {
     public void addItemToCart(Long bookId, int quantity) {
         String username = getUsername();
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
@@ -55,7 +57,7 @@ public class CartService extends SuperService {
                     return cartRepository.save(newCart);
                 });
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new BookNotFoundException("Book not found"));
         CartItem cartItem = new CartItem();
         cartItem.setBook(book);
         cartItem.setQuantity(quantity);

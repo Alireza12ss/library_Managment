@@ -30,11 +30,9 @@ public class BookRequestService extends SuperService {
         BookRequest bookRequest = new BookRequest();
         bookRequest.setTitle(bookRequestDto.getTitle());
         bookRequest.setAuthor(bookRequestDto.getAuthor());
-
         // If the user is not found, throw custom exception
         bookRequest.setUser(userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username)));
-
         bookRequest.setFulfilled(false);
         bookRequestRepository.save(bookRequest);
 
