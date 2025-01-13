@@ -28,9 +28,4 @@ public class Order {
 
     @Column(name = "total_price")
     private long totalPrice;
-
-    @Override
-    public String toString(){
-        return "ok";
-    }
 }

@@ -30,13 +30,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    // Handle generic Exception
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGenericException() {
-        ApiResponse<Void> response = new ApiResponse<>("error", "An unexpected error occurred", null);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
-
     // Handle CartNotFoundException
     @ExceptionHandler(CartNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleCartNotFound(CartNotFoundException ex) {
