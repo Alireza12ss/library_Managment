@@ -2,12 +2,11 @@ package com.example.library.controller;
 
 import com.example.library.dto.CartDto;
 import com.example.library.dto.CartItemReqDto;
-import com.example.library.repository.UserRepository;
+import com.example.library.util.ApiResponse;
 import com.example.library.service.CartService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 @AllArgsConstructor
 @RestController
@@ -15,35 +14,36 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
 
     private final CartService cartService;
-    private final UserRepository userRepository;
 
     // Get Cart by userId (from token)
     @GetMapping
-    public ResponseEntity<CartDto> getCartByUserId() {
+    public ResponseEntity<ApiResponse<CartDto>> getCartByUserId() {
         CartDto cart = cartService.getCartByUserId();
-        return ResponseEntity.ok(cart);
+        ApiResponse<CartDto> response = new ApiResponse<>("success", null, cart);
+        return ResponseEntity.ok(response);
     }
 
     // Add item to cart
     @PostMapping("/items")
-    public ResponseEntity<String> addItemToCart(@RequestBody CartItemReqDto cartItemDTO) {
+    public ResponseEntity<ApiResponse<String>> addItemToCart(@RequestBody CartItemReqDto cartItemDTO) {
         cartService.addItemToCart(cartItemDTO.getBookId(), cartItemDTO.getQuantity());
-        return ResponseEntity.ok("added succesfully!");
+        ApiResponse<String> response = new ApiResponse<>("success", "Item added successfully!", null);
+        return ResponseEntity.ok(response);
     }
 
     // Remove item from cart
     @DeleteMapping("/items/{itemId}")
-    public ResponseEntity<CartDto> removeItemFromCart(@PathVariable Long itemId) {
+    public ResponseEntity<ApiResponse<CartDto>> removeItemFromCart(@PathVariable Long itemId) {
         CartDto updatedCart = cartService.removeItemFromCart(itemId);
-        return ResponseEntity.ok(updatedCart);
+        ApiResponse<CartDto> response = new ApiResponse<>("success", null, updatedCart);
+        return ResponseEntity.ok(response);
     }
 
     // Clear the cart
-    @DeleteMapping
-    public ResponseEntity<Void> clearCart() {
-        cartService.clearCart();
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/{cartId}")
+    public ResponseEntity<ApiResponse<String>> clearCart(@PathVariable Long cartId) {
+        cartService.clearCart(cartId);
+        ApiResponse<String> response = new ApiResponse<>("success", "Cart cleared successfully!", null);
+        return ResponseEntity.ok(response);
     }
-
-
 }

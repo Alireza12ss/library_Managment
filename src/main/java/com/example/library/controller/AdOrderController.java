@@ -2,7 +2,9 @@ package com.example.library.controller;
 
 import com.example.library.dto.OrderDto;
 import com.example.library.service.OrderService;
+import com.example.library.util.ApiResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,18 +18,23 @@ public class AdOrderController {
     private final OrderService orderService;
 
     @GetMapping
-    public List<OrderDto> getAllOrders() {
-        return orderService.getAllOrders();
+    public ResponseEntity<ApiResponse<List<OrderDto>>> getAllOrders() {
+        List<OrderDto> orders = orderService.getAllOrders();
+        ApiResponse<List<OrderDto>> response = new ApiResponse<>("success", null, orders);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/user/{userId}")
-    public List<OrderDto> getOrdersByUser(@PathVariable Long userId) {
-        return orderService.getOrdersByUser(userId);
+    public ResponseEntity<ApiResponse<List<OrderDto>>> getOrdersByUser(@PathVariable Long userId) {
+        List<OrderDto> orders = orderService.getOrdersByUser(userId);
+        ApiResponse<List<OrderDto>> response = new ApiResponse<>("success", null, orders);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<Void> updateOrderStatus(@PathVariable Long orderId, @RequestParam boolean status) {
+    public ResponseEntity<ApiResponse<Void>> updateOrderStatus(@PathVariable Long orderId, @RequestParam boolean status) {
         orderService.updateOrderStatus(orderId, status);
-        return ResponseEntity.noContent().build();
+        ApiResponse<Void> response = new ApiResponse<>("success", "Order status updated successfully", null);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
     }
 }

@@ -1,12 +1,10 @@
 package com.example.library.controller;
 
+import com.example.library.util.ApiResponse;
 import com.example.library.dto.BookDto;
-import com.example.library.entity.Book;
 import com.example.library.service.BookService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,21 +17,23 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
-    public ResponseEntity<List<BookDto>> getAllBooks() {
+    public ResponseEntity<ApiResponse<List<BookDto>>> getAllBooks() {
         List<BookDto> books = bookService.getAllBooks();
-        return ResponseEntity.ok(books);
+        ApiResponse<List<BookDto>> response = new ApiResponse<>("success", null, books);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BookDto> getBookById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<BookDto>> getBookById(@PathVariable Long id) {
         BookDto book = bookService.getBookById(id);
-        return ResponseEntity.ok(book);
+        ApiResponse<BookDto> response = new ApiResponse<>("success", null, book);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/search/{title}")
-    public ResponseEntity<List<BookDto>> searchBooks(@PathVariable String title) {
+    public ResponseEntity<ApiResponse<List<BookDto>>> searchBooks(@PathVariable String title) {
         List<BookDto> filteredBooks = bookService.searchBooks(title);
-        return ResponseEntity.ok(filteredBooks);
+        ApiResponse<List<BookDto>> response = new ApiResponse<>("success", null, filteredBooks);
+        return ResponseEntity.ok(response);
     }
-
 }

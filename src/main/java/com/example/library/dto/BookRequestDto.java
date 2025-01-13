@@ -11,5 +11,4 @@ import lombok.Data;
 public class BookRequestDto {
     private String title;
     private String author;
-    private boolean fulfilled;
 }

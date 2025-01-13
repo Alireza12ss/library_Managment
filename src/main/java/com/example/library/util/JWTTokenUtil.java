@@ -14,9 +14,10 @@ public class JWTTokenUtil {
     private static final long refreshTokenExpiration = 7 * 24 * 60 * 60 * 1000; // 7 days
 
     // Generate Access Token
-    public static String generateAccessToken(String username) {
+    public static String generateAccessToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(SignatureAlgorithm.HS512, tokenSecret)
@@ -46,7 +47,8 @@ public class JWTTokenUtil {
         }
 
         String username = claims.getSubject();
-        return generateAccessToken(username);
+        String role = claims.get("role", String.class);
+        return generateAccessToken(username, role);
     }
 
     // Validate Token
@@ -63,7 +65,6 @@ public class JWTTokenUtil {
         }
         return null;
     }
-
 
     // Check if Token is Expired
     public static boolean isTokenExpired(String token) {
@@ -103,7 +104,6 @@ public class JWTTokenUtil {
         Claims claims = validateToken(token);
         return claims != null && !isTokenExpired(token);
     }
-
 
     // Validate Refresh Token
     public static boolean validateRefreshToken(String refreshToken) {

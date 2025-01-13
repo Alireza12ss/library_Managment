@@ -3,13 +3,12 @@ package com.example.library.controller;
 import com.example.library.dto.BookRequestDto;
 import com.example.library.dto.BookRequestResponse;
 import com.example.library.service.BookRequestService;
+import com.example.library.util.ApiResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -17,25 +16,26 @@ import java.util.List;
 @RequestMapping("/v1/user/book-requests")
 public class BookRequestController {
 
-    private BookRequestService bookRequestService;
+    private final BookRequestService bookRequestService;
 
     @PostMapping
-    public ResponseEntity<BookRequestResponse> createBookRequest(@RequestBody BookRequestDto bookRequestDto, Principal principal) {
-        String username = principal.getName();
-        BookRequestResponse createdRequest = bookRequestService.createBookRequest(bookRequestDto, username);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdRequest);
+    public ResponseEntity<ApiResponse<BookRequestResponse>> createBookRequest(@RequestBody BookRequestDto bookRequestDto) {
+        BookRequestResponse createdRequest = bookRequestService.createBookRequest(bookRequestDto);
+        ApiResponse<BookRequestResponse> response = new ApiResponse<>("success", "Book request created successfully", createdRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<BookRequestDto>> getAllRequests(Principal principal) {
-        String username = principal.getName();
-        List<BookRequestDto> bookRequests = bookRequestService.getAllBookRequests(username);
-        return ResponseEntity.ok(bookRequests);
+    public ResponseEntity<ApiResponse<List<BookRequestDto>>> getAllRequests() {
+        List<BookRequestDto> bookRequests = bookRequestService.getAllBookRequests();
+        ApiResponse<List<BookRequestDto>> response = new ApiResponse<>("success", null, bookRequests);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteRequest(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<String>> deleteRequest(@PathVariable Long id) {
         bookRequestService.deleteBookRequest(id);
-        return ResponseEntity.ok("Book request deleted successfully.");
+        ApiResponse<String> response = new ApiResponse<>("success", "Book request deleted successfully", null);
+        return ResponseEntity.ok(response);
     }
 }

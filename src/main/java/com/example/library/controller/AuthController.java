@@ -1,8 +1,10 @@
 package com.example.library.controller;
+
 import com.example.library.dto.*;
 import com.example.library.service.AuthService;
+import com.example.library.util.ApiResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,34 +13,32 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class AuthController {
 
-    private AuthService service;
+    private final AuthService service;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDto> register(
+    public ResponseEntity<ApiResponse<AuthResponseDto>> register(
             @RequestBody RegisterRequestDto requestDto
-            ){
-        return ResponseEntity.ok(service.register(requestDto));
-
+    ) {
+        AuthResponseDto authResponse = service.register(requestDto);
+        ApiResponse<AuthResponseDto> response = new ApiResponse<>("success", "Registration successful", authResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(
+    public ResponseEntity<ApiResponse<AuthResponseDto>> login(
             @RequestBody LoginRequestDto requestDto
-    ){
-        return ResponseEntity.ok(service.login(requestDto));
-
+    ) {
+        AuthResponseDto authResponse = service.login(requestDto);
+        ApiResponse<AuthResponseDto> response = new ApiResponse<>("success", "Login successful", authResponse);
+        return ResponseEntity.ok(response);
     }
-
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponseDto> refreshToken(
+    public ResponseEntity<ApiResponse<AuthResponseDto>> refreshToken(
             @RequestBody RefreshTokenRequestDto refreshTokenRequest
     ) {
-        return ResponseEntity.ok(service.refresh(refreshTokenRequest));
+        AuthResponseDto authResponse = service.refresh(refreshTokenRequest);
+        ApiResponse<AuthResponseDto> response = new ApiResponse<>("success", "Token refreshed successfully", authResponse);
+        return ResponseEntity.ok(response);
     }
-
-
-
-
-
 }

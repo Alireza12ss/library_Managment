@@ -1,18 +1,18 @@
 package com.example.library.service;
 
 import com.example.library.dto.CartDto;
-import com.example.library.dto.CartItemDto;
 import com.example.library.entity.*;
+import com.example.library.mapper.CartMapper;
 import com.example.library.repository.*;
-import lombok.AllArgsConstructor;
+import com.example.library.exception.CartNotFoundException;
+import com.example.library.exception.CartItemNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
-public class CartService extends SuperService{
+public class CartService extends SuperService {
 
     private final CartRepository cartRepository;
     private final BookRepository bookRepository;
@@ -29,105 +29,66 @@ public class CartService extends SuperService{
         this.cartItemRepository = cartItemRepository;
     }
 
-    // Get Cart by userId (or create a new cart if not found)
-    public CartDto getCartByUserId() {
-        Long userId = getCurrentUserId();
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    // Create a new cart if none exists for the user
-                    Cart newCart = new Cart();
-                    newCart.setUser(userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found")));
-                    cartRepository.save(newCart); // Save the new cart
-                    return newCart;
-                });
-        return mapToCartDTO(cart);
+    public CartDto getCartByUserId(Long userId) {
+        return getCartDto(userId);
     }
 
-    // Add item to cart (create cart if none exists)
+    public CartDto getCartByUserId() {
+        Long userId = getCurrentUserId();
+        return getCartDto(userId);
+    }
+
+    private CartDto getCartDto(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user ID: " + userId));
+        return CartMapper.mapToCartDto(cart);
+    }
+
     public void addItemToCart(Long bookId, int quantity) {
         String username = getUsername();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
                     newCart.setUser(user);
                     return cartRepository.save(newCart);
                 });
-
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
-
         CartItem cartItem = new CartItem();
         cartItem.setBook(book);
         cartItem.setQuantity(quantity);
         cartItem.setCart(cart);
         cartItem.setOrder(null);
-
-        // Save the cart item
         cartItemRepository.save(cartItem);
     }
 
-    // Remove item from cart
     public CartDto removeItemFromCart(Long itemId) {
         Long userId = getCurrentUserId();
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
-
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user ID: " + userId));
         CartItem cartItemToRemove = cart.getCartItems().stream()
                 .filter(item -> item.getId().equals(itemId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("CartItem not found"));
-
-        // Delete the CartItem from the repository and remove it from the cart
+                .orElseThrow(() -> new CartItemNotFoundException("CartItem not found with ID: " + itemId));
         cartItemRepository.delete(cartItemToRemove);
         cart.getCartItems().remove(cartItemToRemove);
-
-        // Save the updated cart
         cartRepository.save(cart);
-        return mapToCartDTO(cart);
+        return CartMapper.mapToCartDto(cart);
     }
 
-    // Clear the cart
-    public void clearCart() {
-        Long userId = getCurrentUserId();
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+    public void clearCart(Long cartId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new CartNotFoundException("Cart not found with ID: " + cartId));
         cartItemRepository.deleteAll(cart.getCartItems());
         cart.getCartItems().clear();
-
         cartRepository.save(cart);
     }
 
-    // Map Cart to CartDto
-    private CartDto mapToCartDTO(Cart cart) {
-        return new CartDto(
-                cart.getUser().getId(),
-                cart.getCartItems().stream()
-                        .map(this::mapToCartItemDTO)
-                        .collect(Collectors.toList()),
-                cart.getCartItems().stream()
-                        .mapToLong(item -> item.getBook().getPrice() * item.getQuantity())
-                        .sum()
-        );
-    }
-
-    // Map CartItem to CartItemDto
-    private CartItemDto mapToCartItemDTO(CartItem cartItem) {
-        return new CartItemDto(
-                cartItem.getBook().getId(),
-                cartItem.getBook().getTitle(),
-                cartItem.getQuantity(),
-                cartItem.getBook().getPrice(),
-                cartItem.getBook().getPrice() * cartItem.getQuantity()
-        );
-    }
-
-    // Get all carts (Admin functionality)
     public List<CartDto> getAllCarts() {
         return cartRepository.findAll().stream()
-                .map(this::mapToCartDTO)
+                .map(CartMapper::mapToCartDto)
                 .collect(Collectors.toList());
     }
 }

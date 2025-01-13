@@ -23,8 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JWTTokenUtil jwtService;
     private final UserDetailsService userDetailsService;
 
-    // Constructor-based Dependency Injection
-    public JwtAuthenticationFilter(JWTTokenUtil jwtService,@Lazy UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JWTTokenUtil jwtService, @Lazy UserDetailsService userDetailsService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }
@@ -39,12 +38,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwt = authHeader.substring(7);
             try {
                 username = JWTTokenUtil.extractUsername(jwt);
+                System.out.println("Extracted username: " + username);
             } catch (ExpiredJwtException e) {
                 System.err.println("JWT has expired: " + e.getMessage());
-//                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//                response.setContentType("application/json");
-//                response.getWriter().write("{\"error\": \"Token has expired\"}");
-//                response.getWriter().flush();
                 return;
             }
         }
@@ -57,6 +53,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("Authentication successful for user: " + username);
+            } else {
+                System.err.println("JWT is invalid or expired");
             }
         }
 

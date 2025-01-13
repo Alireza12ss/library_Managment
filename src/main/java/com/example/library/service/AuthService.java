@@ -1,13 +1,13 @@
 package com.example.library.service;
 
 import com.example.library.dto.*;
-import com.example.library.entity.Cart;
-import com.example.library.entity.Role;
 import com.example.library.entity.User;
-import com.example.library.repository.CartRepository;
+import com.example.library.exception.InvalidCredentialsException;
+import com.example.library.exception.UserNotFoundException;
+import com.example.library.mapper.UserMapper;
 import com.example.library.repository.UserRepository;
 import com.example.library.util.JWTTokenUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,90 +15,64 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.example.library.mapper.UserMapper.mapToUser;
+import static com.example.library.mapper.UserMapper.mapToUserDto;
+
 @Service
+@AllArgsConstructor
 public class AuthService {
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private CartRepository cartRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    // Register a new user
     public AuthResponseDto register(RegisterRequestDto requestDto) {
-        if (userRepository.existsByUsername(requestDto.getUsername())){
-            throw new RuntimeException("Username already taken");
+        if (userRepository.existsByUsername(requestDto.getUsername())) {
+            throw new IllegalArgumentException("Username already taken");
         }
         User user = mapToUser(requestDto, (BCryptPasswordEncoder) passwordEncoder);
         userRepository.save(user);
 
-        String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername());
+        String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername(), user.getRole().toString());
         String refreshToken = JWTTokenUtil.generateRefreshToken(user.getUsername());
 
         return new AuthResponseDto(accessToken, refreshToken);
     }
 
-    // Map RegisterRequestDto to User entity
-    public User mapToUser(RegisterRequestDto registerRequest, BCryptPasswordEncoder passwordEncoder) {
-        User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword())); // Encrypt password
-        user.setRole(Role.USER);
-        return user;
-    }
-
-    // Login user
     public AuthResponseDto login(LoginRequestDto requestDto) {
         User user = userRepository.findByUsername(requestDto.getUsername())
-                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
 
         if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
+            throw new InvalidCredentialsException("Invalid username or password");
         }
 
-        String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername());
+        String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername(), user.getRole().toString());
         String refreshToken = JWTTokenUtil.generateRefreshToken(user.getUsername());
 
         return new AuthResponseDto(accessToken, refreshToken);
     }
 
-    // Refresh access token using refresh token
     public AuthResponseDto refresh(RefreshTokenRequestDto refreshTokenRequest) {
         String accessToken = JWTTokenUtil.refreshAccessToken(refreshTokenRequest.getRefreshToken());
         return new AuthResponseDto(accessToken, refreshTokenRequest.getRefreshToken());
     }
 
-    // Get all users (Admin functionality)
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(this::mapToUserDto)
+                .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
     }
 
-    // Get user by ID
     public UserDto getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
+
         return mapToUserDto(user);
     }
 
-    // Delete user by ID
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found");
+            throw new UserNotFoundException("User not found with ID: " + id);
         }
         userRepository.deleteById(id);
-    }
-
-    // Helper method to map User entity to UserDto
-    private UserDto mapToUserDto(User user) {
-        UserDto dto = new UserDto();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setRole(Role.USER);
-        return dto;
     }
 }

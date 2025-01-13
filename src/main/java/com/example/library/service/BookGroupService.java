@@ -1,15 +1,19 @@
 package com.example.library.service;
 
-import com.example.library.dto.BookDto;
 import com.example.library.dto.BookGroupDto;
-import com.example.library.entity.Book;
+import com.example.library.dto.BookGroupReqDto;
 import com.example.library.entity.BookGroup;
+import com.example.library.exception.BookGroupNotFoundException;
+import com.example.library.exception.DuplicateBookGroupException;
+import com.example.library.mapper.BookMapper;
 import com.example.library.repository.BookGroupRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.example.library.mapper.BookMapper.mapToBookGroupDto;
 
 @Service
 public class BookGroupService {
@@ -20,45 +24,20 @@ public class BookGroupService {
         this.bookGroupRepository = bookGroupRepository;
     }
 
-
     public List<BookGroupDto> searchBookGroups(String keyword) {
         List<BookGroup> bookGroups = bookGroupRepository.findAll();
 
         return bookGroups.stream()
                 .filter(group -> group.getName().toLowerCase().contains(keyword.toLowerCase()))
-                .map(this::mapToBookGroupDto) // Map to BookGroupDto
+                .map(BookMapper::mapToBookGroupDto) // Map to BookGroupDto
                 .collect(Collectors.toList());
     }
 
-    // Helper method to map BookGroup to BookGroupDto
-    private BookGroupDto mapToBookGroupDto(BookGroup bookGroup) {
-        BookGroupDto dto = new BookGroupDto();
-        dto.setName(bookGroup.getName());
-        dto.setBooks(bookGroup.getBooks().stream()
-                .map(this::mapToBookDto) // Map each Book to BookDto
-                .collect(Collectors.toList()));
-        return dto;
-    }
-
-    // Helper method to map Book to BookDto
-    private BookDto mapToBookDto(Book book) {
-        BookDto dto = new BookDto(
-                book.getTitle(),
-                book.getAuthor(),
-                book.getGroup().getName(),
-                book.getPrice()
-        );
-        // Map other fields as necessary
-        return dto;
-    }
-
-
-
     // Create a new Book Group
-    public BookGroupDto createBookGroup(BookGroupDto bookGroupDto) {
+    public BookGroupDto createBookGroup(BookGroupReqDto bookGroupDto) {
         Optional<BookGroup> existingGroup = bookGroupRepository.findByName(bookGroupDto.getName());
         if (existingGroup.isPresent()) {
-            throw new IllegalArgumentException("Book group with the same name already exists");
+            throw new DuplicateBookGroupException("Book group with the name '" + bookGroupDto.getName() + "' already exists.");
         }
 
         BookGroup bookGroup = new BookGroup();
@@ -66,18 +45,16 @@ public class BookGroupService {
         return mapToBookGroupDto(bookGroupRepository.save(bookGroup));
     }
 
-    // Get all Book Groups
-    // Get all Book Groups and return as DTOs
     public List<BookGroupDto> getAllBookGroups() {
         return bookGroupRepository.findAll().stream()
-                .map(this::mapToBookGroupDto) // Map each BookGroup to BookGroupDto
+                .map(BookMapper::mapToBookGroupDto) // Map each BookGroup to BookGroupDto
                 .collect(Collectors.toList());
     }
 
     // Update an existing Book Group
     public BookGroupDto updateBookGroup(Long id, BookGroupDto bookGroupDto) {
         BookGroup bookGroup = bookGroupRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Book group not found"));
+                .orElseThrow(() -> new BookGroupNotFoundException("Book group with ID " + id + " not found."));
 
         bookGroup.setName(bookGroupDto.getName());
         return mapToBookGroupDto(bookGroupRepository.save(bookGroup));
@@ -86,7 +63,7 @@ public class BookGroupService {
     // Delete a Book Group
     public void deleteBookGroup(Long id) {
         if (!bookGroupRepository.existsById(id)) {
-            throw new IllegalArgumentException("Book group not found");
+            throw new BookGroupNotFoundException("Book group with ID " + id + " not found.");
         }
 
         bookGroupRepository.deleteById(id);

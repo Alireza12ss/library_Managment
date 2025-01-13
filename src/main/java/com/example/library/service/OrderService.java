@@ -5,6 +5,9 @@ import com.example.library.dto.OrderDto;
 import com.example.library.entity.Cart;
 import com.example.library.entity.CartItem;
 import com.example.library.entity.Order;
+import com.example.library.exception.CartNotFoundException;
+import com.example.library.exception.OrderNotFoundException;
+import com.example.library.exception.UserNotFoundException;
 import com.example.library.repository.CartRepository;
 import com.example.library.repository.OrderRepository;
 import com.example.library.repository.UserRepository;
@@ -40,17 +43,17 @@ public class OrderService extends SuperService {
     // Fetch order by ID
     public OrderDto getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
         return mapToOrderDTO(order);
     }
 
     // Place an order using username
     public OrderDto placeOrder() {
         String username = getUsername();
-        Cart cart = cartRepository.findByUserId(
-                        userRepository.findByUsername(username).get().getId()
-                )
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+        Cart cart = cartRepository.findByUserId(userRepository.findByUsername(username)
+                        .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username))
+                        .getId())
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user: " + username));
 
         if (cart.getCartItems().isEmpty()) {
             throw new RuntimeException("Cart is empty. Cannot place an order.");
@@ -118,14 +121,8 @@ public class OrderService extends SuperService {
 
     public void updateOrderStatus(Long orderId, boolean paid) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        if (paid) {
-            order.setPaymentCompleted(true);
-        } else {
-            order.setPaymentCompleted(true);
-        }
-
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
+        order.setPaymentCompleted(paid);
         orderRepository.save(order);
     }
 }

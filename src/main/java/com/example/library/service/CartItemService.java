@@ -1,8 +1,10 @@
 package com.example.library.service;
+
 import com.example.library.dto.CartItemDto;
 import com.example.library.entity.CartItem;
+import com.example.library.mapper.CartMapper;
 import com.example.library.repository.CartItemRepository;
-import com.example.library.service.CartItemService;
+import com.example.library.exception.CartItemNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,20 +12,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class CartItemService {
     private final CartItemRepository cartItemRepository;
+    private final CartMapper cartItemMapper;
 
     public CartItemDto getCartItemById(Long id) {
         CartItem cartItem = cartItemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("CartItem not found"));
-        return mapToCartItemDTO(cartItem);
-    }
-
-    private CartItemDto mapToCartItemDTO(CartItem cartItem) {
-        return new CartItemDto(
-                cartItem.getBook().getId(),
-                cartItem.getBook().getTitle(),
-                cartItem.getQuantity(),
-                cartItem.getBook().getPrice(),
-                cartItem.getBook().getPrice() * cartItem.getQuantity()
-        );
+                .orElseThrow(() -> new CartItemNotFoundException("CartItem not found with ID: " + id));
+        return cartItemMapper.mapToCartItemDto(cartItem);
     }
 }
