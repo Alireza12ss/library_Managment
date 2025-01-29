@@ -2,70 +2,93 @@ package com.example.library.service;
 
 import com.example.library.dto.BookGroupDto;
 import com.example.library.dto.BookGroupReqDto;
-import com.example.library.entity.BookGroup;
-import com.example.library.exception.BookGroupNotFoundException;
-import com.example.library.exception.DuplicateBookGroupException;
-import com.example.library.mapper.BookMapper;
+import com.example.library.mapper.BookGroupMapper;
 import com.example.library.repository.BookGroupRepository;
+import com.example.library.util.ApiResponse;
+import com.example.library.util.ResponseUtil;
+import com.raika.customexception.exceptions.BaseException;
+import com.raika.customexception.exceptions.CustomException;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.example.library.mapper.BookMapper.mapToBookGroupDto;
-
+@AllArgsConstructor
 @Service
 public class BookGroupService {
 
     private final BookGroupRepository bookGroupRepository;
+    private final BookGroupMapper bookGroupMapper;
 
-    public BookGroupService(BookGroupRepository bookGroupRepository) {
-        this.bookGroupRepository = bookGroupRepository;
-    }
-
-    public List<BookGroupDto> searchBookGroups(String keyword) {
-        List<BookGroup> bookGroups = bookGroupRepository.findAll();
-
-        return bookGroups.stream()
-                .filter(group -> group.getName().toLowerCase().contains(keyword.toLowerCase()))
-                .map(BookMapper::mapToBookGroupDto) // Map to BookGroupDto
-                .collect(Collectors.toList());
-    }
-
-    // Create a new Book Group
-    public BookGroupDto createBookGroup(BookGroupReqDto bookGroupDto) {
-        Optional<BookGroup> existingGroup = bookGroupRepository.findByName(bookGroupDto.getName());
-        if (existingGroup.isPresent()) {
-            throw new DuplicateBookGroupException("Book group with the name '" + bookGroupDto.getName() + "' already exists.");
+    public ApiResponse<List<BookGroupDto>> searchBookGroups(String keyword) {
+        try {
+            var filteredGroups = bookGroupRepository.searchByKeyword(keyword).stream()
+                    .map(bookGroupMapper::toDto)
+                    .collect(Collectors.toList());
+            return ResponseUtil.success(filteredGroups);
+        } catch (Exception e) {
+            throw new CustomException.ServerError("Error while searching for book groups: " + e.getMessage());
         }
-
-        BookGroup bookGroup = new BookGroup();
-        bookGroup.setName(bookGroupDto.getName());
-        return mapToBookGroupDto(bookGroupRepository.save(bookGroup));
     }
 
-    public List<BookGroupDto> getAllBookGroups() {
-        return bookGroupRepository.findAll().stream()
-                .map(BookMapper::mapToBookGroupDto) // Map each BookGroup to BookGroupDto
-                .collect(Collectors.toList());
-    }
-
-    // Update an existing Book Group
-    public BookGroupDto updateBookGroup(Long id, BookGroupDto bookGroupDto) {
-        BookGroup bookGroup = bookGroupRepository.findById(id)
-                .orElseThrow(() -> new BookGroupNotFoundException("Book group with ID " + id + " not found."));
-
-        bookGroup.setName(bookGroupDto.getName());
-        return mapToBookGroupDto(bookGroupRepository.save(bookGroup));
-    }
-
-    // Delete a Book Group
-    public void deleteBookGroup(Long id) {
-        if (!bookGroupRepository.existsById(id)) {
-            throw new BookGroupNotFoundException("Book group with ID " + id + " not found.");
+    @Transactional
+    public ApiResponse<BookGroupDto> createBookGroup(BookGroupReqDto bookGroupReqDto) {
+        try {
+            if (bookGroupRepository.existsByName(bookGroupReqDto.getName())) {
+                throw new CustomException.Conflict("Book group with the name '" + bookGroupReqDto.getName() + "' already exists.");
+            }
+            var bookGroup = bookGroupMapper.toEntity(bookGroupReqDto);
+            var savedBookGroup = bookGroupRepository.save(bookGroup);
+            return ResponseUtil.success(bookGroupMapper.toDto(savedBookGroup));
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
         }
+    }
 
-        bookGroupRepository.deleteById(id);
+    public ApiResponse<List<BookGroupDto>> getAllBookGroups() {
+        try {
+            var bookGroups = bookGroupRepository.findAll().stream()
+                    .map(bookGroupMapper::toDto)
+                    .collect(Collectors.toList());
+            return ResponseUtil.success(bookGroups);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
+    }
+
+    @Transactional
+    public ApiResponse<BookGroupDto> updateBookGroup(Long id, BookGroupReqDto bookGroupReqDto) {
+        try {
+            var bookGroup = bookGroupRepository.findById(id)
+                    .orElseThrow(() -> new CustomException.NotFound("Book group with ID " + id + " not found."));
+            var bookgroup = bookGroupMapper.partialUpdate(bookGroupReqDto, bookGroup);
+            var updatedBookGroup = bookGroupRepository.save(bookgroup);
+            return ResponseUtil.success(bookGroupMapper.toDto(updatedBookGroup));
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
+    }
+
+    @Transactional
+    public ApiResponse<Boolean> deleteBookGroup(Long id) {
+        try {
+            if (!bookGroupRepository.existsById(id)) {
+                throw new CustomException.NotFound("Book group with ID " + id + " not found.");
+            }
+            bookGroupRepository.deleteById(id);
+            return ResponseUtil.success(true);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
     }
 }

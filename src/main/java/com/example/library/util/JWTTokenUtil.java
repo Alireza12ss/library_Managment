@@ -1,5 +1,6 @@
 package com.example.library.util;
 
+import com.raika.customexception.exceptions.CustomException;
 import io.jsonwebtoken.*;
 import org.springframework.stereotype.Component;
 
@@ -39,13 +40,12 @@ public class JWTTokenUtil {
     public static String refreshAccessToken(String refreshToken) {
         Claims claims = validateToken(refreshToken);
         if (claims == null) {
-            throw new RuntimeException("Invalid refresh token");
+            throw new CustomException.Forbidden("Invalid refresh token");
         }
 
         if (claims.getExpiration().before(new Date())) {
-            throw new RuntimeException("Refresh token has expired");
+            throw new CustomException.Forbidden("Refresh token has expired");
         }
-
         String username = claims.getSubject();
         String role = claims.get("role", String.class);
         return generateAccessToken(username, role);

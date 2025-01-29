@@ -1,11 +1,16 @@
 package com.example.library.service;
+
 import com.example.library.dto.PaymentDto;
-import com.example.library.entity.Order;
 import com.example.library.entity.Payment;
 import com.example.library.entity.Status;
-import com.example.library.exception.OrderNotFoundException;
+import com.example.library.mapper.PaymentMapper;
 import com.example.library.repository.OrderRepository;
 import com.example.library.repository.PaymentRepository;
+import com.example.library.repository.UserRepository;
+import com.example.library.util.ApiResponse;
+import com.example.library.util.ResponseUtil;
+import com.raika.customexception.exceptions.BaseException;
+import com.raika.customexception.exceptions.CustomException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,58 +22,68 @@ import java.util.stream.Collectors;
 public class PaymentService extends SuperService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final PaymentMapper paymentMapper;
 
-    public PaymentService(PaymentRepository paymentRepository, OrderRepository orderRepository) {
-        super(null);
+    public PaymentService(UserRepository userRepository, PaymentRepository paymentRepository, OrderRepository orderRepository, PaymentMapper paymentMapper) {
+        super(userRepository);
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
+        this.paymentMapper = paymentMapper;
     }
 
-    // Create a fake payment for an order
     @Transactional
-    public PaymentDto makePayment(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+    public ApiResponse<PaymentDto> makePayment(Long orderId) {
+        try {
+            var order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new CustomException.NotFound("Order not found with ID: " + orderId));
 
-        if (order.isPaymentCompleted()) {
-            throw new IllegalArgumentException("Payment already completed for this order");
+            if (order.isPaymentCompleted()) {
+                throw new CustomException.BadRequest("Payment already completed for this order");
+            }
+
+            var payment = new Payment();
+            payment.setOrder(order);
+            payment.setAmount(order.getTotalPrice());
+            payment.setPaymentDate(new Date());
+            payment.setStatus(Status.SUCCESS);
+
+            paymentRepository.save(payment);
+
+            order.setPaymentCompleted(true);
+            orderRepository.save(order);
+
+            return ResponseUtil.success(paymentMapper.toDto(payment));
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
         }
-
-        Payment payment = new Payment();
-        payment.setOrder(order);
-        payment.setAmount(order.getTotalPrice());
-        payment.setPaymentDate(new Date());
-        payment.setStatus(Status.SUCCESS);
-
-        paymentRepository.save(payment);
-
-        order.setPaymentCompleted(true);
-        orderRepository.save(order);
-
-        return mapToPaymentDto(payment);
     }
 
-    // Fetch all payments for the current user
-    public List<PaymentDto> getUserPayments() {
-        Long userId = getCurrentUserId();
-        return paymentRepository.findByOrderUserId(userId).stream()
-                .map(this::mapToPaymentDto)
-                .collect(Collectors.toList());
+    public ApiResponse<List<PaymentDto>> getUserPayments() {
+        try {
+            var userId = getCurrentUserId();
+            var payments = paymentRepository.findByOrderUserId(userId).stream()
+                    .map(paymentMapper::toDto)
+                    .collect(Collectors.toList());
+            return ResponseUtil.success(payments);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
     }
 
-    public List<PaymentDto> getUserPayments(Long userId) {
-        return paymentRepository.findByOrderUserId(userId).stream()
-                .map(this::mapToPaymentDto)
-                .collect(Collectors.toList());
-    }
-
-    // Map Payment to PaymentDto
-    private PaymentDto mapToPaymentDto(Payment payment) {
-        PaymentDto dto = new PaymentDto();
-        dto.setOrderId(payment.getOrder().getId());
-        dto.setAmount(payment.getAmount());
-        dto.setPaymentDate(payment.getPaymentDate());
-        dto.setStatus(String.valueOf(payment.getStatus()));
-        return dto;
+    public ApiResponse<List<PaymentDto>> getUserPayments(Long userId) {
+        try {
+            var payments = paymentRepository.findByOrderUserId(userId).stream()
+                    .map(paymentMapper::toDto)
+                    .collect(Collectors.toList());
+            return ResponseUtil.success(payments);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
     }
 }

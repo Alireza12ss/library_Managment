@@ -19,26 +19,20 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponseDto>> register(
             @RequestBody RegisterRequestDto requestDto
     ) {
-        AuthResponseDto authResponse = service.register(requestDto);
-        ApiResponse<AuthResponseDto> response = new ApiResponse<>("success", "Registration successful", authResponse);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.ok(service.register(requestDto));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponseDto>> login(
             @RequestBody LoginRequestDto requestDto
     ) {
-        AuthResponseDto authResponse = service.login(requestDto);
-        ApiResponse<AuthResponseDto> response = new ApiResponse<>("success", "Login successful", authResponse);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(service.login(requestDto));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponseDto>> refreshToken(
             @RequestBody RefreshTokenRequestDto refreshTokenRequest
     ) {
-        AuthResponseDto authResponse = service.refresh(refreshTokenRequest);
-        ApiResponse<AuthResponseDto> response = new ApiResponse<>("success", "Token refreshed successfully", authResponse);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(service.refresh(refreshTokenRequest));
     }
 }

@@ -1,128 +1,139 @@
 package com.example.library.service;
 
-import com.example.library.dto.CartItemDto;
 import com.example.library.dto.OrderDto;
-import com.example.library.entity.Cart;
-import com.example.library.entity.CartItem;
 import com.example.library.entity.Order;
-import com.example.library.exception.CartNotFoundException;
-import com.example.library.exception.OrderNotFoundException;
-import com.example.library.exception.UserNotFoundException;
+import com.example.library.mapper.OrderMapper;
 import com.example.library.repository.CartRepository;
 import com.example.library.repository.OrderRepository;
 import com.example.library.repository.UserRepository;
+import com.example.library.util.ApiResponse;
+import com.example.library.util.ResponseUtil;
+import com.raika.customexception.exceptions.BaseException;
+import com.raika.customexception.exceptions.CustomException;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService extends SuperService {
+    private final UserRepository userRepository;
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
+    private final OrderMapper orderMapper;
 
-    public OrderService(UserRepository userRepository, CartRepository cartRepository,
-                        OrderRepository orderRepository, UserRepository userRepository1) {
+    public OrderService(UserRepository userRepository, CartRepository cartRepository, OrderRepository orderRepository, OrderMapper orderMapper) {
         super(userRepository);
+        this.userRepository = userRepository;
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
-        this.userRepository = userRepository1;
+        this.orderMapper = orderMapper;
     }
 
-    // Fetch orders by username
-    public List<OrderDto> getOrdersByUsername() {
-        String username = getUsername();
-        return orderRepository.findByUserUsername(username).stream()
-                .map(this::mapToOrderDTO)
-                .collect(Collectors.toList());
-    }
-
-    // Fetch order by ID
-    public OrderDto getOrderById(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
-        return mapToOrderDTO(order);
-    }
-
-    // Place an order using username
-    public OrderDto placeOrder() {
-        String username = getUsername();
-        Cart cart = cartRepository.findByUserId(userRepository.findByUsername(username)
-                        .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username))
-                        .getId())
-                .orElseThrow(() -> new CartNotFoundException("Cart not found for user: " + username));
-
-        if (cart.getCartItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty. Cannot place an order.");
+    public ApiResponse<List<OrderDto>> getOrdersByUsername() {
+        try {
+            var username = getUsername();
+            var orders = orderRepository.findByUserUsername(username)
+                    .stream()
+                    .map(orderMapper::toDto)
+                    .toList();
+            return ResponseUtil.success(orders);
+        } catch (Exception e) {
+            throw new CustomException.ServerError("Error while fetching orders: " + e.getMessage());
         }
+    }
 
-        // Create a new order
-        Order order = new Order();
-        order.setUser(cart.getUser());
-        order.setOrderDate(new Date());
-        order.setTotalPrice(cart.getCartItems().stream()
-                .mapToLong(item -> item.getBook().getPrice() * item.getQuantity()).sum());
-        order.setPaymentCompleted(false);
-
-        // Move items from cart to order
-        List<CartItem> orderItems = new ArrayList<>();
-        for (CartItem cartItem : cart.getCartItems()) {
-            cartItem.setOrder(order); // Link to order
-            orderItems.add(cartItem);
+    public ApiResponse<OrderDto> getOrderById(Long orderId) {
+        try {
+            var order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new CustomException.NotFound("Order not found with ID: " + orderId));
+            long totalPrice = order.getCart().getCartItems().stream()
+                    .mapToLong(item -> item.getBook().getPrice() * item.getQuantity())
+                    .sum();
+            var orderDto = orderMapper.toDto(order);
+            orderDto.setTotalPrice(totalPrice);
+            return ResponseUtil.success(orderDto);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
         }
-        order.setItems(orderItems);
-        orderRepository.save(order);
-        cart.getCartItems().clear();
-        cartRepository.save(cart);
-
-        return mapToOrderDTO(order);
     }
 
-    // Map Order to OrderDto
-    private OrderDto mapToOrderDTO(Order order) {
-        return new OrderDto(
-                order.getUser().getId(),
-                order.getItems().stream()
-                        .map(this::mapToCartItemDTO)
-                        .collect(Collectors.toList()),
-                new java.sql.Date(order.getOrderDate().getTime()), // Ensure correct type for SQL Date
-                order.getTotalPrice(),
-                order.isPaymentCompleted()
-        );
+    @Transactional
+    public ApiResponse<OrderDto> placeOrder() {
+        try {
+            var username = getUsername();
+            var user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new CustomException.NotFound("User not found with username: " + username));
+
+            var cart = cartRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> new CustomException.NotFound("Cart not found for user: " + username));
+
+            if (cart.getCartItems().isEmpty()) {
+                throw new CustomException.BadRequest("Cart is empty. Cannot place an order.");
+            }
+            var order = new Order();
+            order.setUser(cart.getUser());
+            order.setOrderDate(new Date());
+            order.setTotalPrice(cart.getCartItems().stream()
+                    .mapToLong(item -> item.getBook().getPrice() * item.getQuantity())
+                    .sum());
+            order.setPaymentCompleted(false);
+            order.setCart(null);
+            orderRepository.save(order);
+
+            cart.getCartItems().clear();
+            cartRepository.delete(cart);
+
+            return ResponseUtil.success(orderMapper.toDto(order));
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
     }
 
-    // Map CartItem to CartItemDto
-    private CartItemDto mapToCartItemDTO(CartItem cartItem) {
-        return new CartItemDto(
-                cartItem.getBook().getId(),
-                cartItem.getBook().getTitle(),
-                cartItem.getQuantity(),
-                cartItem.getBook().getPrice(),
-                cartItem.getBook().getPrice() * cartItem.getQuantity()
-        );
+    public ApiResponse<List<OrderDto>> getAllOrders() {
+        try {
+            var orders = orderRepository.findAll()
+                    .stream()
+                    .map(orderMapper::toDto)
+                    .toList();
+            return ResponseUtil.success(orders);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
     }
 
-    // Fetch all orders (optional)
-    public List<OrderDto> getAllOrders() {
-        return orderRepository.findAll().stream()
-                .map(this::mapToOrderDTO)
-                .collect(Collectors.toList());
+    public ApiResponse<List<OrderDto>> getOrdersByUser(Long userId) {
+        try {
+            var orders = orderRepository.findByUserId(userId)
+                    .stream()
+                    .map(orderMapper::toDto)
+                    .toList();
+            return ResponseUtil.success(orders);
+        } catch (Exception e) {
+            throw new CustomException.ServerError("Error while fetching orders by user: " + e.getMessage());
+        }
     }
 
-    // Fetch orders by user ID
-    public List<OrderDto> getOrdersByUser(Long userId) {
-        return orderRepository.findByUserId(userId).stream()
-                .map(this::mapToOrderDTO)
-                .collect(Collectors.toList());
-    }
-
-    public void updateOrderStatus(Long orderId, boolean paid) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
-        order.setPaymentCompleted(paid);
-        orderRepository.save(order);
+    @Transactional
+    public ApiResponse<Boolean> updateOrderStatus(Long orderId, boolean isPaid) {
+        try {
+            var order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new CustomException.NotFound("Order not found with ID: " + orderId));
+            order.setPaymentCompleted(isPaid);
+            orderRepository.save(order);
+            return ResponseUtil.success(true);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
     }
 }

@@ -14,10 +14,6 @@ public class CartItem {
     @JoinColumn(name = "cart_id")
     private Cart cart;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
-
     @ManyToOne
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;

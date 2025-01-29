@@ -1,78 +1,117 @@
 package com.example.library.service;
 
-import com.example.library.dto.*;
-import com.example.library.entity.User;
-import com.example.library.exception.InvalidCredentialsException;
-import com.example.library.exception.UserNotFoundException;
-import com.example.library.mapper.UserMapper;
-import com.example.library.repository.UserRepository;
-import com.example.library.util.JWTTokenUtil;
-import lombok.AllArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.example.library.mapper.UserMapper.mapToUser;
-import static com.example.library.mapper.UserMapper.mapToUserDto;
+import com.example.library.dto.*;
+import com.example.library.entity.Role;
+import com.example.library.entity.User;
+import com.example.library.mapper.UserMapper;
+import com.example.library.repository.UserRepository;
+import com.example.library.util.ApiResponse;
+import com.example.library.util.JWTTokenUtil;
+import com.example.library.util.ResponseUtil;
+import com.raika.customexception.exceptions.BaseException;
+import com.raika.customexception.exceptions.CustomException;
+import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    public AuthResponseDto register(RegisterRequestDto requestDto) {
-        if (userRepository.existsByUsername(requestDto.getUsername())) {
-            throw new IllegalArgumentException("Username already taken");
+    public ApiResponse<AuthResponseDto> register(RegisterRequestDto requestDto) {
+        try {
+            if (userRepository.existsByUsername(requestDto.getUsername())) {
+                throw new CustomException.Conflict("Username already taken");
+            }
+            User user = userMapper.toEntity(requestDto);
+            user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+            user.setRole(Role.USER);
+            userRepository.save(user);
+            String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername(), String.valueOf(user.getRole()));
+            String refreshToken = JWTTokenUtil.generateRefreshToken(user.getUsername());
+            return ResponseUtil.created(new AuthResponseDto(accessToken, refreshToken));
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
         }
-        User user = mapToUser(requestDto, (BCryptPasswordEncoder) passwordEncoder);
-        userRepository.save(user);
-
-        String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername(), user.getRole().toString());
-        String refreshToken = JWTTokenUtil.generateRefreshToken(user.getUsername());
-
-        return new AuthResponseDto(accessToken, refreshToken);
     }
 
-    public AuthResponseDto login(LoginRequestDto requestDto) {
-        User user = userRepository.findByUsername(requestDto.getUsername())
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
+    public ApiResponse<AuthResponseDto> login(LoginRequestDto requestDto) {
+        try {
+            User user = userRepository.findByUsername(requestDto.getUsername())
+                    .orElseThrow(() -> new CustomException.ValidationFailure("Invalid username or password"));
 
-        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-            throw new InvalidCredentialsException("Invalid username or password");
+            if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+                throw new CustomException.ValidationFailure("Invalid username or password");
+            }
+
+            String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername(), String.valueOf(user.getRole()));
+            String refreshToken = JWTTokenUtil.generateRefreshToken(user.getUsername());
+
+            return ResponseUtil.success(new AuthResponseDto(accessToken, refreshToken));
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
         }
-
-        String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername(), user.getRole().toString());
-        String refreshToken = JWTTokenUtil.generateRefreshToken(user.getUsername());
-
-        return new AuthResponseDto(accessToken, refreshToken);
     }
 
-    public AuthResponseDto refresh(RefreshTokenRequestDto refreshTokenRequest) {
-        String accessToken = JWTTokenUtil.refreshAccessToken(refreshTokenRequest.getRefreshToken());
-        return new AuthResponseDto(accessToken, refreshTokenRequest.getRefreshToken());
-    }
-
-    public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(UserMapper::mapToUserDto)
-                .collect(Collectors.toList());
-    }
-
-    public UserDto getUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
-
-        return mapToUserDto(user);
-    }
-
-    public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException("User not found with ID: " + id);
+    public ApiResponse<AuthResponseDto> refresh(RefreshTokenRequestDto refreshTokenRequest) {
+        try {
+            String accessToken = JWTTokenUtil.refreshAccessToken(refreshTokenRequest.getRefreshToken());
+            return ResponseUtil.success(new AuthResponseDto(accessToken, refreshTokenRequest.getRefreshToken()));
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
         }
-        userRepository.deleteById(id);
+    }
+
+    public ApiResponse<List<UserDto>> getAllUsers() {
+        try {
+            var list = userRepository.findAll()
+                    .stream()
+                    .map(userMapper::toDto)
+                    .collect(Collectors.toList());
+            return ResponseUtil.success(list);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
+    }
+
+    public ApiResponse<UserDto> getUserById(Long id) {
+        try {
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new CustomException.NotFound("User not found with ID: " + id));
+
+            return ResponseUtil.success(userMapper.toDto(user));
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
+    }
+
+    public ApiResponse<Boolean> deleteUser(Long id) {
+        try {
+            if (!userRepository.existsById(id)) {
+                throw new CustomException.NotFound("User not found with ID: " + id);
+            }
+            userRepository.deleteById(id);
+            return ResponseUtil.success(true);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
     }
 }

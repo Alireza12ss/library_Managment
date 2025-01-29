@@ -2,31 +2,20 @@ package com.example.library.mapper;
 
 import com.example.library.dto.RegisterRequestDto;
 import com.example.library.dto.UserDto;
-import com.example.library.entity.Role;
 import com.example.library.entity.User;
-import org.modelmapper.ModelMapper;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
+@Mapper(componentModel = "spring")
+public interface UserMapper {
 
-@Component
-public class UserMapper {
+    @Mapping(source = "role", target = "role")
+    UserDto toDto(User user);
 
-    private static ModelMapper modelMapper;
+    @Mapping(target = "id", ignore = true) // Ensure ID is not set during creation
+    User toEntity(RegisterRequestDto registerRequestDto);
 
-    public UserMapper(ModelMapper modelMapper) {
-        UserMapper.modelMapper = modelMapper;
-    }
-
-    public static User mapToUser(RegisterRequestDto registerRequest, BCryptPasswordEncoder passwordEncoder) {
-        User user = modelMapper.map(registerRequest, User.class);
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setRole(Role.USER);
-        return user;
-    }
-
-    public static UserDto mapToUserDto(User user) {
-        return modelMapper.map(user, UserDto.class);
-    }
-
+    void partialUpdate(RegisterRequestDto registerRequestDto, @MappingTarget User user);
 }
+

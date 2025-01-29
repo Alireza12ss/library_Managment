@@ -1,14 +1,15 @@
 package com.example.library.service;
 
 import com.example.library.dto.BookRequestDto;
-import com.example.library.dto.BookRequestResponse;
-import com.example.library.entity.BookRequest;
-import com.example.library.exception.UserNotFoundException;
-import com.example.library.mapper.BookMapper;
+import com.example.library.mapper.BookRequestMapper;
 import com.example.library.repository.BookRequestRepository;
 import com.example.library.repository.UserRepository;
-import com.example.library.exception.BookRequestNotFoundException;
+import com.example.library.util.ApiResponse;
+import com.example.library.util.ResponseUtil;
+import com.raika.customexception.exceptions.BaseException;
+import com.raika.customexception.exceptions.CustomException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,57 +19,99 @@ public class BookRequestService extends SuperService {
 
     private final BookRequestRepository bookRequestRepository;
     private final UserRepository userRepository;
+    private final BookRequestMapper bookRequestMapper;
 
-    public BookRequestService(UserRepository userRepository, BookRequestRepository bookRequestRepository, UserRepository userRepository1) {
+    public BookRequestService(UserRepository userRepository, BookRequestRepository bookRequestRepository,
+                              UserRepository userRepository1, BookRequestMapper bookRequestMapper) {
         super(userRepository);
         this.bookRequestRepository = bookRequestRepository;
         this.userRepository = userRepository1;
+        this.bookRequestMapper = bookRequestMapper;
     }
 
-    public BookRequestResponse createBookRequest(BookRequestDto bookRequestDto) {
-        String username = getUsername();
-        BookRequest bookRequest = new BookRequest();
-        bookRequest.setTitle(bookRequestDto.getTitle());
-        bookRequest.setAuthor(bookRequestDto.getAuthor());
-        // If the user is not found, throw custom exception
-        bookRequest.setUser(userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + username)));
-        bookRequest.setFulfilled(false);
-        bookRequestRepository.save(bookRequest);
-
-        return new BookRequestResponse(
-                bookRequest.getTitle(),
-                bookRequest.getAuthor()
-        );
-    }
-
-    public List<BookRequestDto> getAllBookRequests() {
-        String username = getUsername();
-        // If the user is not found, throw custom exception
-        return bookRequestRepository.findById(
-                        userRepository.findByUsername(username)
-                                .orElseThrow(() -> new UserNotFoundException("User not found: " + username))
-                                .getId()
-                ).stream()
-                .map(BookMapper::mapToBookRequestDto)
-                .collect(Collectors.toList());
-    }
-
-    public void deleteBookRequest(Long id) {
-        // If the book request is not found, throw custom exception
-        if (!bookRequestRepository.existsById(id)) {
-            throw new BookRequestNotFoundException("BookRequest not found with id: " + id);
-        }
-        bookRequestRepository.deleteById(id);
-    }
-
-    public void updateRequestStatus(Long id, String status) {
-        BookRequest bookRequest = bookRequestRepository.findById(id)
-                .orElseThrow(() -> new BookRequestNotFoundException("BookRequest not found with id: " + id));
-
-        if (status.equals("FULFILLED")) {
-            bookRequest.setFulfilled(true);
+    @Transactional
+    public ApiResponse<BookRequestDto> createBookRequest(BookRequestDto bookRequestDto) {
+        try {
+            var username = getUsername();
+            var existingRequest = bookRequestRepository.findByAuthorAndTitle(bookRequestDto.getAuthor(), bookRequestDto.getTitle());
+            if (existingRequest.isPresent()) {
+                throw new CustomException.BadRequest("Book request already exists for the user and book.");
+            }
+            var bookRequest = bookRequestMapper.toEntity(bookRequestDto); // Use BookRequestMapper for mapping
+            bookRequest.setUser(userRepository.findByUsername(username)
+                    .orElseThrow(() -> new CustomException.NotFound("User not found: " + username)));
+            bookRequest.setFulfilled(false);
             bookRequestRepository.save(bookRequest);
+            return ResponseUtil.created(bookRequestDto);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<List<BookRequestDto>> getAllUserBookRequests() {
+        try {
+            var bookRequests = bookRequestRepository.findAll().stream()
+                    .map(bookRequestMapper::toDto) // Use BookRequestMapper for mapping
+                    .collect(Collectors.toList());
+            return ResponseUtil.success(bookRequests);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<List<BookRequestDto>> getAllBookRequests() {
+        try {
+            var username = getUsername();
+            var userId = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new CustomException.NotFound("User not found: " + username))
+                    .getId();
+            var bookRequests = bookRequestRepository.findByUserId(userId).stream()
+                    .map(bookRequestMapper::toDto)
+                    .collect(Collectors.toList());
+            return ResponseUtil.success(bookRequests);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
+    }
+
+    @Transactional
+    public ApiResponse<Boolean> deleteBookRequest(Long id) {
+        try {
+            if (!bookRequestRepository.existsById(id)) {
+                throw new CustomException.NotFound("BookRequest not found with id: " + id);
+            }
+            bookRequestRepository.deleteById(id);
+            return ResponseUtil.success(true);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
+    }
+
+    @Transactional
+    public ApiResponse<Boolean> updateRequestStatus(Long id, boolean status) {
+        try {
+            var bookRequest = bookRequestRepository.findById(id)
+                    .orElseThrow(() -> new CustomException.NotFound("BookRequest not found with id: " + id));
+            if (status) {
+                bookRequest.setFulfilled(true);
+                bookRequestRepository.save(bookRequest);
+                return ResponseUtil.updated(true);
+            }
+            return ResponseUtil.updated(false);
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
         }
     }
 }

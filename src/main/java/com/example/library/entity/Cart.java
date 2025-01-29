@@ -20,8 +20,8 @@ public class Cart {
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> cartItems;
 
-    @Override
-    public String toString(){
-        return "ok";
-    }
+
+    @OneToOne
+    private Order order;
+
 }

@@ -8,7 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @AllArgsConstructor
 public class SuperService {
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
     protected Long getCurrentUserId() {
         String username = getUsername();
