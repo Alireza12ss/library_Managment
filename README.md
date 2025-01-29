@@ -53,6 +53,7 @@ This project is an online library management system built using Java, Spring Boo
    - [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
 2. Use the provided endpoints to:
+   - admin initialize first and you can access with ("admin" , "admin") username and password :)
    - Perform CRUD operations on books and book groups.
    - Sign up, log in, and request new books as a user.
    - Manage all aspects of the library as an admin.
