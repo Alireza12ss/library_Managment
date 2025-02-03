@@ -1,7 +1,8 @@
 package com.example.library.controller.user;
 
-import com.example.library.dto.BookDto;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.Book.CreateUpdateBookDto;
+import com.example.library.dto.Book.ResponseBookDto;
+import com.example.library.dto.ResultDto;
 import com.example.library.service.WishlistService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +18,17 @@ public class WishlistController {
     private final WishlistService wishlistService;
 
     @PostMapping("/{bookId}")
-    public ResponseEntity<ApiResponse<Boolean>> addBookToWishlist(@PathVariable Long bookId) {
-        return ResponseEntity.ok(wishlistService.addBookToWishlist(bookId));
+    public ResponseEntity<ResultDto<Boolean>> create(@PathVariable Long bookId) {
+        return ResponseEntity.ok(wishlistService.create(bookId));
     }
 
     @DeleteMapping("/{bookId}")
-    public ResponseEntity<ApiResponse<Boolean>> removeBookFromWishlist(@PathVariable Long bookId) {
-        return ResponseEntity.ok(wishlistService.removeBookFromWishlist(bookId));
+    public ResponseEntity<ResultDto<Boolean>> delete(@PathVariable Long bookId) {
+        return ResponseEntity.ok(wishlistService.delete(bookId));
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<BookDto>>> getUserWishlist() {
-        return ResponseEntity.ok(wishlistService.getUserWishlist());
+    public ResponseEntity<ResultDto<List<ResponseBookDto>>> getList() {
+        return ResponseEntity.ok(wishlistService.getForUser());
     }
 }

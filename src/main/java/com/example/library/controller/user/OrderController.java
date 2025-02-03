@@ -1,7 +1,7 @@
 package com.example.library.controller.user;
 
-import com.example.library.dto.OrderDto;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.ResponseOrderDto;
+import com.example.library.dto.ResultDto;
 import com.example.library.service.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,14 +17,14 @@ public class OrderController {
     private final OrderService orderService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<OrderDto>>> getUserOrders() {
-        return ResponseEntity.ok(orderService.getOrdersByUsername());
+    public ResponseEntity<ResultDto<List<ResponseOrderDto>>> getUserOrders() {
+        return ResponseEntity.ok(orderService.getUserOrders());
 
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<OrderDto>> placeOrder() {
-        return ResponseEntity.ok(orderService.placeOrder());
+    public ResponseEntity<ResultDto<ResponseOrderDto>> create() {
+        return ResponseEntity.ok(orderService.create());
     }
 
 

@@ -1,8 +1,8 @@
 package com.example.library.controller.user;
 
-import com.example.library.dto.CartDto;
-import com.example.library.dto.CartItemReqDto;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.CartItem.CreateCartItemDto;
+import com.example.library.dto.ResponseCartDto;
+import com.example.library.dto.ResultDto;
 import com.example.library.service.CartService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,28 +15,24 @@ public class CartController {
 
     private final CartService cartService;
 
-    // Get Cart by userId (from token)
     @GetMapping
-    public ResponseEntity<ApiResponse<CartDto>> getCartByUserId() {
-        return ResponseEntity.ok(cartService.getCartByUserId());
+    public ResponseEntity<ResultDto<ResponseCartDto>> getCart() {
+        return ResponseEntity.ok(cartService.getForUser());
     }
 
-    // Add item to cart
     @PostMapping("/items")
-    public ResponseEntity<ApiResponse<Boolean>> addItemToCart(@RequestBody CartItemReqDto cartItemDTO) {
-        return ResponseEntity.ok(cartService.addItemToCart(cartItemDTO.getBookId(), cartItemDTO.getQuantity()));
+    public ResponseEntity<ResultDto<Boolean>> addItemToCart(@RequestBody CreateCartItemDto cartItemDTO) {
+        return ResponseEntity.ok(cartService.add(cartItemDTO.getBookId(), cartItemDTO.getQuantity()));
 
     }
 
-    // Remove item from cart
     @DeleteMapping("/items/{itemId}")
-    public ResponseEntity<ApiResponse<CartDto>> removeItemFromCart(@PathVariable Long itemId) {
-        return ResponseEntity.ok(cartService.removeItemFromCart(itemId));
+    public ResponseEntity<ResultDto<ResponseCartDto>> deleteItem(@PathVariable Long itemId) {
+        return ResponseEntity.ok(cartService.deleteItem(itemId));
     }
 
-    // Clear the cart
     @DeleteMapping("/{cartId}")
-    public ResponseEntity<ApiResponse<Boolean>> clearCart(@PathVariable Long cartId) {
-        return ResponseEntity.ok(cartService.clearCart(cartId));
+    public ResponseEntity<ResultDto<Boolean>> delete(@PathVariable Long cartId) {
+        return ResponseEntity.ok(cartService.delete(cartId));
     }
 }

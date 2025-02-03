@@ -12,6 +12,5 @@ import java.util.List;
 public interface BookRepository extends JpaRepository<Book, Long> {
 
     boolean findByTitleAndAuthor(String author, String title);
-    @Query("SELECT bg FROM Book bg WHERE LOWER(bg.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Book> searchByKeyword(@Param("keyword") String keyword);
+    List<Book> findByTitleContainingIgnoreCase(String title);
 }

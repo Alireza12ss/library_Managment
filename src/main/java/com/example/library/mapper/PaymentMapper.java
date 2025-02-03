@@ -16,5 +16,4 @@ public interface PaymentMapper {
     @Mapping(source = "orderId", target = "order.id")
     Payment toEntity(PaymentDto paymentDto);
 
-    void partialUpdate(PaymentDto paymentDto, @MappingTarget Payment payment);
 }

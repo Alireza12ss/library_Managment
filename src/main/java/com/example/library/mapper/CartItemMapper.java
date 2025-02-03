@@ -1,6 +1,6 @@
 package com.example.library.mapper;
 
-import com.example.library.dto.CartItemDto;
+import com.example.library.dto.CartItem.CartItemDto;
 import com.example.library.entity.CartItem;
 import org.mapstruct.Mapper;
 

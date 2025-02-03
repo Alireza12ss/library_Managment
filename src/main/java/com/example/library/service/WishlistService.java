@@ -1,6 +1,6 @@
 package com.example.library.service;
 
-import com.example.library.dto.BookDto;
+import com.example.library.dto.Book.ResponseBookDto;
 import com.example.library.dto.WishlistDto;
 import com.example.library.entity.Wishlist;
 import com.example.library.mapper.BookMapper;
@@ -8,7 +8,7 @@ import com.example.library.mapper.WishlistMapper;
 import com.example.library.repository.BookRepository;
 import com.example.library.repository.UserRepository;
 import com.example.library.repository.WishlistRepository;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.ResultDto;
 import com.example.library.util.ResponseUtil;
 import com.raika.customexception.exceptions.BaseException;
 import com.raika.customexception.exceptions.CustomException;
@@ -39,7 +39,7 @@ public class WishlistService extends SuperService {
     }
 
     @Transactional
-    public ApiResponse<Boolean> addBookToWishlist(Long bookId) {
+    public ResultDto<Boolean> create(Long bookId) {
         try {
             var userId = getCurrentUserId();
 
@@ -67,7 +67,7 @@ public class WishlistService extends SuperService {
     }
 
     @Transactional
-    public ApiResponse<Boolean> removeBookFromWishlist(Long bookId) {
+    public ResultDto<Boolean> delete(Long bookId) {
         try {
             var userId = getCurrentUserId();
 
@@ -84,8 +84,7 @@ public class WishlistService extends SuperService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public ApiResponse<List<BookDto>> getUserWishlist() {
+    public ResultDto<List<ResponseBookDto>> getForUser() {
         try {
             var userId = getCurrentUserId();
             var wishlist = wishlistRepository.findByUserId(userId).stream()
@@ -99,8 +98,7 @@ public class WishlistService extends SuperService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public ApiResponse<List<BookDto>> getUserWishlist(Long userId) {
+    public ResultDto<List<ResponseBookDto>> getForAdmin(Long userId) {
         try {
             var wishlist = wishlistRepository.findByUserId(userId).stream()
                     .map(item -> bookMapper.toDto(item.getBook())) // Use WishlistMapper for mapping
@@ -113,12 +111,12 @@ public class WishlistService extends SuperService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public ApiResponse<List<WishlistDto>> getAllWishlists() {
+
+    public ResultDto<List<WishlistDto>> getAll() {
         try {
             var wishlists = wishlistRepository.findAll().stream()
-                    .map(wishlistMapper::toDto) // Use WishlistMapper for mapping
-                    .collect(Collectors.toList());
+                    .map(wishlistMapper::toDto)
+                    .toList();
             return ResponseUtil.success(wishlists);
         } catch (BaseException exception) {
             throw exception;
@@ -127,15 +125,4 @@ public class WishlistService extends SuperService {
         }
     }
 
-    @Transactional
-    public ApiResponse<Boolean> deleteWishlistItem(Long wishlistId) {
-        try {
-            wishlistRepository.deleteById(wishlistId);
-            return ResponseUtil.success(true);
-        } catch (BaseException exception) {
-            throw exception;
-        } catch (Exception exception) {
-            throw new CustomException.ServerError(exception.getMessage());
-        }
-    }
 }

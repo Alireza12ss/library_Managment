@@ -4,7 +4,6 @@ import com.example.library.dto.WishlistDto;
 import com.example.library.entity.Wishlist;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface WishlistMapper {
@@ -18,5 +17,4 @@ public interface WishlistMapper {
     @Mapping(source = "bookId", target = "book.id")
     Wishlist toEntity(WishlistDto wishlistDto);
 
-    void partialUpdate(WishlistDto wishlistDto, @MappingTarget Wishlist wishlist);
 }

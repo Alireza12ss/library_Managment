@@ -20,7 +20,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Ensure user role is not null and prefix it with "ROLE_"
         if (user.getRole() != null) {
             return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
         }
@@ -39,12 +38,12 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // Customize if account expiration logic exists
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // Customize if account lock logic exists
+        return true;
     }
 
     @Override
@@ -54,7 +53,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true; // Customize if account enable/disable logic exists
+        return true;
     }
 
 }

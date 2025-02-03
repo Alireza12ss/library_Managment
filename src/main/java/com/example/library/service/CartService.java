@@ -1,10 +1,10 @@
 package com.example.library.service;
 
-import com.example.library.dto.CartDto;
+import com.example.library.dto.ResponseCartDto;
 import com.example.library.entity.*;
 import com.example.library.mapper.CartMapper;
 import com.example.library.repository.*;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.ResultDto;
 import com.example.library.util.ResponseUtil;
 import com.raika.customexception.exceptions.BaseException;
 import com.raika.customexception.exceptions.CustomException;
@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CartService extends SuperService {
@@ -33,9 +32,9 @@ public class CartService extends SuperService {
         this.cartMapper = cartMapper;
     }
 
-    public ApiResponse<CartDto> getCartByUserId(Long userId) {
+    public ResultDto<ResponseCartDto> getByUserId(Long userId) {
         try {
-            var cart = getCartByUserIdInternal(userId);
+            var cart = getCartByUserId(userId);
             return ResponseUtil.success(cartMapper.toDto(cart));
         } catch (BaseException exception) {
             throw exception;
@@ -44,13 +43,21 @@ public class CartService extends SuperService {
         }
     }
 
-    public ApiResponse<CartDto> getCartByUserId() {
-        var userId = getCurrentUserId();
-        return getCartByUserId(userId);
+    public ResultDto<ResponseCartDto> getForUser() {
+        try {
+            long userId = getCurrentUserId();
+            var cart = getCartByUserId(userId);
+            return ResponseUtil.success(cartMapper.toDto(cart));
+        } catch (BaseException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new CustomException.ServerError(exception.getMessage());
+        }
+
     }
 
     @Transactional
-    public ApiResponse<Boolean> addItemToCart(Long bookId, int quantity) {
+    public ResultDto<Boolean> add(Long bookId, int quantity) {
         try {
             var username = getUsername();
             var user = userRepository.findByUsername(username)
@@ -80,12 +87,12 @@ public class CartService extends SuperService {
     }
 
     @Transactional
-    public ApiResponse<CartDto> removeItemFromCart(Long itemId) {
+    public ResultDto<ResponseCartDto> deleteItem(Long itemId) {
         try {
             var userId = getCurrentUserId();
-            var cart = getCartByUserIdInternal(userId);
+            var cart = getCartByUserId(userId);
 
-            var cartItemToRemove = cartItemRepository.findByCartIdAndItemId(cart.getId() , itemId)
+            var cartItemToRemove = cartItemRepository.findCartItemByCart_IdAndAndId(cart.getId() , itemId)
                             .orElseThrow(() -> new CustomException.NotFound("cart item not found"));
 
             cartItemRepository.delete(cartItemToRemove);
@@ -101,23 +108,7 @@ public class CartService extends SuperService {
     }
 
     @Transactional
-    public ApiResponse<Boolean> clearCartForAdmin(Long cartId) {
-        try {
-            var cart = cartRepository.findById(cartId)
-                    .orElseThrow(() -> new CustomException.NotFound("Cart not found with ID: " + cartId));
-            cartItemRepository.deleteAll(cart.getCartItems());
-            cart.getCartItems().clear();
-            cartRepository.delete(cart);
-            return ResponseUtil.success(true);
-        } catch (BaseException exception) {
-            throw exception;
-        } catch (Exception exception) {
-            throw new CustomException.ServerError(exception.getMessage());
-        }
-    }
-
-    @Transactional
-    public ApiResponse<Boolean> clearCart(Long cartId) {
+    public ResultDto<Boolean> delete(Long cartId) {
         try {
             var userId = getCurrentUserId();
             var cart = cartRepository.findById(cartId)
@@ -136,11 +127,11 @@ public class CartService extends SuperService {
         }
     }
 
-    public ApiResponse<List<CartDto>> getAllCarts() {
+    public ResultDto<List<ResponseCartDto>> getAll() {
         try {
             var carts = cartRepository.findAll().stream()
                     .map(cartMapper::toDto)
-                    .collect(Collectors.toList());
+                    .toList();
             return ResponseUtil.success(carts);
         }catch (BaseException exception) {
             throw exception;
@@ -149,7 +140,7 @@ public class CartService extends SuperService {
         }
     }
 
-    private Cart getCartByUserIdInternal(Long userId) {
+    private Cart getCartByUserId(Long userId) {
         return cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new CustomException.NotFound("Cart not found for user ID: " + userId));
     }

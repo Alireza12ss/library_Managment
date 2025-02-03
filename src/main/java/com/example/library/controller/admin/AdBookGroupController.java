@@ -1,9 +1,9 @@
 package com.example.library.controller.admin;
 
-import com.example.library.dto.BookGroupDto;
-import com.example.library.dto.BookGroupReqDto;
+import com.example.library.dto.BookGroup.ResponseBookGroupDto;
+import com.example.library.dto.BookGroup.CreateUpdateBookGroupDto;
 import com.example.library.service.BookGroupService;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.ResultDto;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,23 +18,23 @@ public class AdBookGroupController {
     private final BookGroupService bookGroupService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<BookGroupDto>>> getAllBookGroups() {
-        return ResponseEntity.ok(bookGroupService.getAllBookGroups());
+    public ResponseEntity<ResultDto<List<ResponseBookGroupDto>>> getList() {
+        return ResponseEntity.ok(bookGroupService.getAll());
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<BookGroupDto>> addBookGroup(@RequestBody BookGroupReqDto bookGroupDto) {
-        return ResponseEntity.ok(bookGroupService.createBookGroup(bookGroupDto));
+    public ResponseEntity<ResultDto<ResponseBookGroupDto>> create(@RequestBody CreateUpdateBookGroupDto bookGroupDto) {
+        return ResponseEntity.ok(bookGroupService.create(bookGroupDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<BookGroupDto>> updateBookGroup(@PathVariable Long id, @RequestBody BookGroupReqDto bookGroupDto) {
-        return ResponseEntity.ok(bookGroupService.updateBookGroup(id, bookGroupDto));
+    public ResponseEntity<ResultDto<ResponseBookGroupDto>> update(@PathVariable Long id, @RequestBody CreateUpdateBookGroupDto bookGroupDto) {
+        return ResponseEntity.ok(bookGroupService.update(id, bookGroupDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Boolean>> deleteBookGroup(@PathVariable Long id) {
-        return ResponseEntity.ok(bookGroupService.deleteBookGroup(id));
+    public ResponseEntity<ResultDto<Boolean>> delete(@PathVariable Long id) {
+        return ResponseEntity.ok(bookGroupService.delete(id));
     }
 
 }

@@ -7,7 +7,7 @@ import com.example.library.mapper.PaymentMapper;
 import com.example.library.repository.OrderRepository;
 import com.example.library.repository.PaymentRepository;
 import com.example.library.repository.UserRepository;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.ResultDto;
 import com.example.library.util.ResponseUtil;
 import com.raika.customexception.exceptions.BaseException;
 import com.raika.customexception.exceptions.CustomException;
@@ -32,7 +32,7 @@ public class PaymentService extends SuperService {
     }
 
     @Transactional
-    public ApiResponse<PaymentDto> makePayment(Long orderId) {
+    public ResultDto<PaymentDto> create(Long orderId) {
         try {
             var order = orderRepository.findById(orderId)
                     .orElseThrow(() -> new CustomException.NotFound("Order not found with ID: " + orderId));
@@ -60,7 +60,7 @@ public class PaymentService extends SuperService {
         }
     }
 
-    public ApiResponse<List<PaymentDto>> getUserPayments() {
+    public ResultDto<List<PaymentDto>> getList() {
         try {
             var userId = getCurrentUserId();
             var payments = paymentRepository.findByOrderUserId(userId).stream()
@@ -74,7 +74,7 @@ public class PaymentService extends SuperService {
         }
     }
 
-    public ApiResponse<List<PaymentDto>> getUserPayments(Long userId) {
+    public ResultDto<List<PaymentDto>> getUserPayments(Long userId) {
         try {
             var payments = paymentRepository.findByOrderUserId(userId).stream()
                     .map(paymentMapper::toDto)

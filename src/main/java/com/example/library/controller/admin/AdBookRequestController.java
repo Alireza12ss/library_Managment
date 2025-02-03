@@ -1,9 +1,9 @@
 package com.example.library.controller.admin;
 
-import com.example.library.dto.BookRequestDto;
-import com.example.library.entity.BookRequest;
+import com.example.library.dto.BookRequest.CreateBookRequestDto;
+import com.example.library.dto.BookRequest.ResponseBookRequestDto;
 import com.example.library.service.BookRequestService;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.ResultDto;
 import lombok.AllArgsConstructor;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +17,15 @@ public class AdBookRequestController {
     private final BookRequestService bookRequestService;
 
     @PutMapping("/{requestId}/status")
-    public ResponseEntity<ApiResponse<Boolean>> updateBookRequestStatus(
+    public ResponseEntity<ResultDto<Boolean>> update(
             @PathVariable Long requestId,
             @RequestParam Boolean status) {
-        return ResponseEntity.ok(bookRequestService.updateRequestStatus(requestId, status));
+        return ResponseEntity.ok(bookRequestService.update(requestId, status));
 
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<BookRequestDto>>> getAll(){
-        return ResponseEntity.ok(bookRequestService.getAllUserBookRequests());
+    public ResponseEntity<ResultDto<List<ResponseBookRequestDto>>> getAll(){
+        return ResponseEntity.ok(bookRequestService.getListAdmin());
     }
 }

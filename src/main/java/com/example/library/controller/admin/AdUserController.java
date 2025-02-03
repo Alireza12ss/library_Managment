@@ -1,8 +1,8 @@
 package com.example.library.controller.admin;
 
-import com.example.library.dto.UserDto;
+import com.example.library.dto.Auth.ResponseUserDto;
 import com.example.library.service.AuthService;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.ResultDto;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,17 +17,17 @@ public class AdUserController {
     private final AuthService userService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<UserDto>>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<ResultDto<List<ResponseUserDto>>> getList() {
+        return ResponseEntity.ok(userService.getList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserDto>> getUserById(@PathVariable Long id) {
+    public ResponseEntity<ResultDto<ResponseUserDto>> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Boolean>> deleteUser(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.deleteUser(id));
+    public ResponseEntity<ResultDto<Boolean>> delete(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.delete(id));
     }
 }

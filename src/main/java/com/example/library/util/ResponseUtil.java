@@ -1,9 +1,11 @@
 package com.example.library.util;
 
+import com.example.library.dto.ResultDto;
+
 public class ResponseUtil{
 
-    public static<T> ApiResponse<T> success(T model){
-        return new ApiResponse<>(
+    public static<T> ResultDto<T> success(T model){
+        return new ResultDto<>(
                 true,
                 200,
                 "success",
@@ -11,8 +13,8 @@ public class ResponseUtil{
                 );
     }
 
-    public static<T> ApiResponse<T> created(T model){
-        return new ApiResponse<>(
+    public static<T> ResultDto<T> created(T model){
+        return new ResultDto<>(
                 true,
                 201,
                 "created",
@@ -20,8 +22,8 @@ public class ResponseUtil{
         );
     }
 
-    public static<T> ApiResponse<T> updated(T model){
-        return new ApiResponse<>(
+    public static<T> ResultDto<T> updated(T model){
+        return new ResultDto<>(
                 true,
                 204,
                 "updated",

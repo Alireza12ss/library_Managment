@@ -1,6 +1,6 @@
 package com.example.library.mapper;
 
-import com.example.library.dto.CartDto;
+import com.example.library.dto.ResponseCartDto;
 import com.example.library.entity.Cart;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -10,11 +10,9 @@ import org.mapstruct.MappingTarget;
 public interface CartMapper {
 
     @Mapping(source = "user.id", target = "userId")
-    CartDto toDto(Cart cart);
+    ResponseCartDto toDto(Cart cart);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(source = "userId", target = "user.id")
-    Cart toEntity(CartDto cartDto);
-
-    void partialUpdate(CartDto cartDto, @MappingTarget Cart cart);
+    Cart toEntity(ResponseCartDto responseCartDto);
 }

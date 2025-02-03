@@ -2,7 +2,7 @@ package com.example.library.controller.admin;
 
 import com.example.library.dto.PaymentDto;
 import com.example.library.service.PaymentService;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.ResultDto;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ public class AdPaymentController {
 
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<List<PaymentDto>>> getUserPayments(@PathVariable Long userId) {
+    public ResponseEntity<ResultDto<List<PaymentDto>>> getUserPayments(@PathVariable Long userId) {
         return ResponseEntity.ok(paymentService.getUserPayments(userId));
     }
 

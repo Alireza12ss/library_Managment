@@ -1,6 +1,6 @@
 package com.example.library.config;
 
-import com.example.library.dto.BookDto;
+import com.example.library.dto.Book.CreateUpdateBookDto;
 import com.example.library.dto.WishlistDto;
 import com.example.library.entity.Book;
 import com.example.library.entity.Wishlist;
@@ -17,7 +17,7 @@ public class MapperConfig {
         ModelMapper modelMapper = new ModelMapper();
 
         // Custom mapping for Book to BookDto
-        modelMapper.addMappings(new PropertyMap<Book, BookDto>() {
+        modelMapper.addMappings(new PropertyMap<Book, CreateUpdateBookDto>() {
             @Override
             protected void configure() {
                 map().setGroup(source.getGroup().getName());

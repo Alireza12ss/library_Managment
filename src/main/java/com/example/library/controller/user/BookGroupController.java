@@ -1,8 +1,8 @@
 package com.example.library.controller.user;
 
-import com.example.library.dto.BookGroupDto;
+import com.example.library.dto.BookGroup.ResponseBookGroupDto;
 import com.example.library.service.BookGroupService;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.ResultDto;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,12 +18,12 @@ public class BookGroupController {
 
     // Get all Book Groups
     @GetMapping
-    public ResponseEntity<ApiResponse<List<BookGroupDto>>> getAllBookGroups() {
-        return ResponseEntity.ok(bookGroupService.getAllBookGroups());
+    public ResponseEntity<ResultDto<List<ResponseBookGroupDto>>> getList() {
+        return ResponseEntity.ok(bookGroupService.getAll());
     }
 
     @GetMapping("/search/{keyword}")
-    public ResponseEntity<ApiResponse<List<BookGroupDto>>> searchBookGroups(@PathVariable String keyword) {
-        return ResponseEntity.ok(bookGroupService.searchBookGroups(keyword));
+    public ResponseEntity<ResultDto<List<ResponseBookGroupDto>>> search(@PathVariable String keyword) {
+        return ResponseEntity.ok(bookGroupService.search(keyword));
     }
 }

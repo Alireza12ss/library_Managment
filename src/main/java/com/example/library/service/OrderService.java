@@ -1,16 +1,15 @@
 package com.example.library.service;
 
-import com.example.library.dto.OrderDto;
+import com.example.library.dto.ResponseOrderDto;
 import com.example.library.entity.Order;
 import com.example.library.mapper.OrderMapper;
 import com.example.library.repository.CartRepository;
 import com.example.library.repository.OrderRepository;
 import com.example.library.repository.UserRepository;
-import com.example.library.util.ApiResponse;
+import com.example.library.dto.ResultDto;
 import com.example.library.util.ResponseUtil;
 import com.raika.customexception.exceptions.BaseException;
 import com.raika.customexception.exceptions.CustomException;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +31,7 @@ public class OrderService extends SuperService {
         this.orderMapper = orderMapper;
     }
 
-    public ApiResponse<List<OrderDto>> getOrdersByUsername() {
+    public ResultDto<List<ResponseOrderDto>> getUserOrders() {
         try {
             var username = getUsername();
             var orders = orderRepository.findByUserUsername(username)
@@ -45,7 +44,7 @@ public class OrderService extends SuperService {
         }
     }
 
-    public ApiResponse<OrderDto> getOrderById(Long orderId) {
+    public ResultDto<ResponseOrderDto> getById(Long orderId) {
         try {
             var order = orderRepository.findById(orderId)
                     .orElseThrow(() -> new CustomException.NotFound("Order not found with ID: " + orderId));
@@ -63,7 +62,7 @@ public class OrderService extends SuperService {
     }
 
     @Transactional
-    public ApiResponse<OrderDto> placeOrder() {
+    public ResultDto<ResponseOrderDto> create() {
         try {
             var username = getUsername();
             var user = userRepository.findByUsername(username)
@@ -96,7 +95,7 @@ public class OrderService extends SuperService {
         }
     }
 
-    public ApiResponse<List<OrderDto>> getAllOrders() {
+    public ResultDto<List<ResponseOrderDto>> getAll() {
         try {
             var orders = orderRepository.findAll()
                     .stream()
@@ -110,7 +109,7 @@ public class OrderService extends SuperService {
         }
     }
 
-    public ApiResponse<List<OrderDto>> getOrdersByUser(Long userId) {
+    public ResultDto<List<ResponseOrderDto>> getUserOrdersForAdmin(Long userId) {
         try {
             var orders = orderRepository.findByUserId(userId)
                     .stream()
@@ -119,21 +118,6 @@ public class OrderService extends SuperService {
             return ResponseUtil.success(orders);
         } catch (Exception e) {
             throw new CustomException.ServerError("Error while fetching orders by user: " + e.getMessage());
-        }
-    }
-
-    @Transactional
-    public ApiResponse<Boolean> updateOrderStatus(Long orderId, boolean isPaid) {
-        try {
-            var order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new CustomException.NotFound("Order not found with ID: " + orderId));
-            order.setPaymentCompleted(isPaid);
-            orderRepository.save(order);
-            return ResponseUtil.success(true);
-        } catch (BaseException exception) {
-            throw exception;
-        } catch (Exception exception) {
-            throw new CustomException.ServerError(exception.getMessage());
         }
     }
 }

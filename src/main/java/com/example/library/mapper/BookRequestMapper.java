@@ -1,6 +1,7 @@
 package com.example.library.mapper;
 
-import com.example.library.dto.BookRequestDto;
+import com.example.library.dto.BookRequest.CreateBookRequestDto;
+import com.example.library.dto.BookRequest.ResponseBookRequestDto;
 import com.example.library.entity.BookRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -8,9 +9,8 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface BookRequestMapper {
 
-    BookRequestDto toDto(BookRequest bookRequest);
+    ResponseBookRequestDto toDto(BookRequest bookRequest);
 
-    BookRequest toEntity(BookRequestDto bookRequestDto);
+    BookRequest toEntity(CreateBookRequestDto createBookRequestDto);
 
-    void partialUpdate(BookRequestDto bookRequestDto, @MappingTarget BookRequest bookRequest);
 }
