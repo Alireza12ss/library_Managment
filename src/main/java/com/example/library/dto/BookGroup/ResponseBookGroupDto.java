@@ -8,6 +8,6 @@ import java.util.List;
 @Data
 public class ResponseBookGroupDto {
     private String name;
-    private List<CreateUpdateBookDto> books;
+//    private List<CreateUpdateBookDto> books;
 }
 

@@ -9,11 +9,12 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
 
+    @Mapping(source = "id", target = "orderId")
     @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "cart.cartItems", target = "cartItems")
     ResponseOrderDto toDto(Order order);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(source = "userId", target = "user.id")
     Order toEntity(ResponseOrderDto orderDto);
 
     void partialUpdate(ResponseOrderDto orderDto, @MappingTarget Order order);

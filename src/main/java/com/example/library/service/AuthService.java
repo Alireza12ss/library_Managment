@@ -44,9 +44,12 @@ public class AuthService {
 
     public ResultDto<AuthResponseDto> login(LoginRequestDto requestDto) {
         try {
-            String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
-            User user = userRepository.findUserByUsernameAndPassword(requestDto.getUsername(), encodedPassword)
+            User user = userRepository.findByUsername(requestDto.getUsername())
                     .orElseThrow(() -> new CustomException.ValidationFailure("Invalid username or password"));
+
+            if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
+                throw new CustomException.ValidationFailure("Invalid username or password");
+            }
             String accessToken = JWTTokenUtil.generateAccessToken(user.getUsername(), String.valueOf(user.getRole()));
             String refreshToken = JWTTokenUtil.generateRefreshToken(user.getUsername());
             return ResponseUtil.success(new AuthResponseDto(accessToken, refreshToken));

@@ -9,12 +9,10 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface BookMapper {
-
     @Mapping(source = "group.name", target = "group")
     ResponseBookDto toDto(Book book);
-
     @Mapping(source = "group", target = "group.name")
-    Book toEntity(CreateUpdateBookDto bookDto);
-
-    Book partialUpdate(CreateUpdateBookDto bookDto, @MappingTarget Book book);
+    Book toEntity(CreateUpdateBookDto dto);
+    @Mapping(source = "group", target = "group.name")
+    Book partialUpdate(CreateUpdateBookDto dto, @MappingTarget Book book);
 }

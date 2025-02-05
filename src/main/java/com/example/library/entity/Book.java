@@ -17,4 +17,10 @@ public class Book {
     private BookGroup group;
     private Long price;
 
+    @Override
+    public String toString() {
+        return "Book{id=" + id + ", title='" + title + "'}";
+    }
+
+
 }

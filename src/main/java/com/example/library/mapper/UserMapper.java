@@ -8,11 +8,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-
-    @Mapping(source = "role", target = "role")
     ResponseUserDto toDto(User user);
-
-    @Mapping(target = "id", ignore = true)
     User toEntity(RegisterRequestDto registerRequestDto);
 }
 
