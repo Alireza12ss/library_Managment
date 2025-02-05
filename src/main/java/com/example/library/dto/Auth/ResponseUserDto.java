@@ -2,8 +2,11 @@ package com.example.library.dto.Auth;
 
 import com.example.library.entity.Role;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class ResponseUserDto {
 
     private Long id;

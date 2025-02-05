@@ -33,11 +33,12 @@ public class OrderService extends SuperService {
 
     public ResultDto<List<ResponseOrderDto>> getUserOrders() {
         try {
-            var username = getUsername();
-            var orders = orderRepository.findByUserUsername(username)
+            var username = getCurrentUserId();
+            var orders = orderRepository.findByUserId(username)
                     .stream()
                     .map(orderMapper::toDto)
                     .toList();
+
             return ResponseUtil.success(orders);
         } catch (Exception e) {
             throw new CustomException.ServerError("Error while fetching orders: " + e.getMessage());

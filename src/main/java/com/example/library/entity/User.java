@@ -3,18 +3,22 @@ package com.example.library.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
+@Getter
+@Setter
 @Entity
-@Data
 @Table(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Primary key (Long type)
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -33,4 +37,5 @@ public class User {
     public String toString(){
         return "ok";
     }
+
 }

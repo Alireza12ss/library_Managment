@@ -48,7 +48,6 @@ public class CartService extends SuperService {
             long userId = getCurrentUserId();
             var cart = getCartByUserId(userId);
             ResponseCartDto response = cartMapper.toDto(cart);
-            System.out.println("Mapped Cart DTO: " + response);
             return ResponseUtil.success(response);
         } catch (BaseException exception) {
             throw exception;

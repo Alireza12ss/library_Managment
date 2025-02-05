@@ -1,5 +1,6 @@
 package com.example.library.dto.CartItem;
 
+import com.example.library.dto.Book.ResponseBookDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,9 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartItemDto {
-    private Long bookId;
-    private String bookTitle;
+    private ResponseBookDto book;
     private int quantity;
-    private long pricePerUnit;
     private long totalPrice;
 }
