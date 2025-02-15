@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-02-05T14:47:19+0330",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.2 (Oracle Corporation)"
+    date = "2025-02-06T22:31:51+0330",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.41.0.z20250115-2156, environment: Java 21.0.5 (Eclipse Adoptium)"
 )
 @Component
 public class CartMapperImpl implements CartMapper {
@@ -31,25 +31,10 @@ public class CartMapperImpl implements CartMapper {
 
         ResponseCartDto responseCartDto = new ResponseCartDto();
 
-        responseCartDto.setUser( userToResponseUserDto( cart.getUser() ) );
         responseCartDto.setCartItems( cartItemListToCartItemDtoList( cart.getCartItems() ) );
+        responseCartDto.setUser( userToResponseUserDto( cart.getUser() ) );
 
         return responseCartDto;
-    }
-
-    protected ResponseUserDto userToResponseUserDto(User user) {
-        if ( user == null ) {
-            return null;
-        }
-
-        ResponseUserDto responseUserDto = new ResponseUserDto();
-
-        responseUserDto.setId( user.getId() );
-        responseUserDto.setUsername( user.getUsername() );
-        responseUserDto.setPassword( user.getPassword() );
-        responseUserDto.setRole( user.getRole() );
-
-        return responseUserDto;
     }
 
     protected List<CartItemDto> cartItemListToCartItemDtoList(List<CartItem> list) {
@@ -63,5 +48,20 @@ public class CartMapperImpl implements CartMapper {
         }
 
         return list1;
+    }
+
+    protected ResponseUserDto userToResponseUserDto(User user) {
+        if ( user == null ) {
+            return null;
+        }
+
+        ResponseUserDto responseUserDto = new ResponseUserDto();
+
+        responseUserDto.setId( user.getId() );
+        responseUserDto.setPassword( user.getPassword() );
+        responseUserDto.setRole( user.getRole() );
+        responseUserDto.setUsername( user.getUsername() );
+
+        return responseUserDto;
     }
 }

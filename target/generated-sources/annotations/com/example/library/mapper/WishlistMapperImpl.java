@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-02-05T14:47:19+0330",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.2 (Oracle Corporation)"
+    date = "2025-02-06T22:31:45+0330",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.41.0.z20250115-2156, environment: Java 21.0.5 (Eclipse Adoptium)"
 )
 @Component
 public class WishlistMapperImpl implements WishlistMapper {
@@ -27,8 +27,8 @@ public class WishlistMapperImpl implements WishlistMapper {
 
         WishlistDto wishlistDto = new WishlistDto();
 
-        wishlistDto.setUser( userToResponseUserDto( wishlist.getUser() ) );
         wishlistDto.setBook( bookToResponseBookDto( wishlist.getBook() ) );
+        wishlistDto.setUser( userToResponseUserDto( wishlist.getUser() ) );
 
         return wishlistDto;
     }
@@ -41,25 +41,10 @@ public class WishlistMapperImpl implements WishlistMapper {
 
         Wishlist wishlist = new Wishlist();
 
-        wishlist.setUser( responseUserDtoToUser( wishlistDto.getUser() ) );
         wishlist.setBook( responseBookDtoToBook( wishlistDto.getBook() ) );
+        wishlist.setUser( responseUserDtoToUser( wishlistDto.getUser() ) );
 
         return wishlist;
-    }
-
-    protected ResponseUserDto userToResponseUserDto(User user) {
-        if ( user == null ) {
-            return null;
-        }
-
-        ResponseUserDto responseUserDto = new ResponseUserDto();
-
-        responseUserDto.setId( user.getId() );
-        responseUserDto.setUsername( user.getUsername() );
-        responseUserDto.setPassword( user.getPassword() );
-        responseUserDto.setRole( user.getRole() );
-
-        return responseUserDto;
     }
 
     protected ResponseBookGroupDto bookGroupToResponseBookGroupDto(BookGroup bookGroup) {
@@ -81,27 +66,27 @@ public class WishlistMapperImpl implements WishlistMapper {
 
         ResponseBookDto responseBookDto = new ResponseBookDto();
 
-        responseBookDto.setTitle( book.getTitle() );
         responseBookDto.setAuthor( book.getAuthor() );
         responseBookDto.setGroup( bookGroupToResponseBookGroupDto( book.getGroup() ) );
         responseBookDto.setPrice( book.getPrice() );
+        responseBookDto.setTitle( book.getTitle() );
 
         return responseBookDto;
     }
 
-    protected User responseUserDtoToUser(ResponseUserDto responseUserDto) {
-        if ( responseUserDto == null ) {
+    protected ResponseUserDto userToResponseUserDto(User user) {
+        if ( user == null ) {
             return null;
         }
 
-        User user = new User();
+        ResponseUserDto responseUserDto = new ResponseUserDto();
 
-        user.setId( responseUserDto.getId() );
-        user.setUsername( responseUserDto.getUsername() );
-        user.setPassword( responseUserDto.getPassword() );
-        user.setRole( responseUserDto.getRole() );
+        responseUserDto.setId( user.getId() );
+        responseUserDto.setPassword( user.getPassword() );
+        responseUserDto.setRole( user.getRole() );
+        responseUserDto.setUsername( user.getUsername() );
 
-        return user;
+        return responseUserDto;
     }
 
     protected BookGroup responseBookGroupDtoToBookGroup(ResponseBookGroupDto responseBookGroupDto) {
@@ -123,11 +108,26 @@ public class WishlistMapperImpl implements WishlistMapper {
 
         Book book = new Book();
 
-        book.setTitle( responseBookDto.getTitle() );
         book.setAuthor( responseBookDto.getAuthor() );
         book.setGroup( responseBookGroupDtoToBookGroup( responseBookDto.getGroup() ) );
         book.setPrice( responseBookDto.getPrice() );
+        book.setTitle( responseBookDto.getTitle() );
 
         return book;
+    }
+
+    protected User responseUserDtoToUser(ResponseUserDto responseUserDto) {
+        if ( responseUserDto == null ) {
+            return null;
+        }
+
+        User user = new User();
+
+        user.setId( responseUserDto.getId() );
+        user.setPassword( responseUserDto.getPassword() );
+        user.setRole( responseUserDto.getRole() );
+        user.setUsername( responseUserDto.getUsername() );
+
+        return user;
     }
 }

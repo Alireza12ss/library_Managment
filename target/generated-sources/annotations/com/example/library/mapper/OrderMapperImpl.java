@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-02-05T14:47:19+0330",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.2 (Oracle Corporation)"
+    date = "2025-02-06T22:31:51+0330",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.41.0.z20250115-2156, environment: Java 21.0.5 (Eclipse Adoptium)"
 )
 @Component
 public class OrderMapperImpl implements OrderMapper {
@@ -26,10 +26,10 @@ public class OrderMapperImpl implements OrderMapper {
         ResponseOrderDto responseOrderDto = new ResponseOrderDto();
 
         responseOrderDto.setId( order.getId() );
-        responseOrderDto.setUser( userMapper.toDto( order.getUser() ) );
         responseOrderDto.setOrderDate( order.getOrderDate() );
-        responseOrderDto.setTotalPrice( order.getTotalPrice() );
         responseOrderDto.setPaymentCompleted( order.isPaymentCompleted() );
+        responseOrderDto.setTotalPrice( order.getTotalPrice() );
+        responseOrderDto.setUser( userMapper.toDto( order.getUser() ) );
 
         return responseOrderDto;
     }

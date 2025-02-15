@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-02-05T14:47:19+0330",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.2 (Oracle Corporation)"
+    date = "2025-02-06T22:31:52+0330",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.41.0.z20250115-2156, environment: Java 21.0.5 (Eclipse Adoptium)"
 )
 @Component
 public class CartItemMapperImpl implements CartItemMapper {
@@ -64,10 +64,10 @@ public class CartItemMapperImpl implements CartItemMapper {
 
         ResponseBookDto responseBookDto = new ResponseBookDto();
 
-        responseBookDto.setTitle( book.getTitle() );
         responseBookDto.setAuthor( book.getAuthor() );
         responseBookDto.setGroup( bookGroupToResponseBookGroupDto( book.getGroup() ) );
         responseBookDto.setPrice( book.getPrice() );
+        responseBookDto.setTitle( book.getTitle() );
 
         return responseBookDto;
     }
@@ -91,10 +91,10 @@ public class CartItemMapperImpl implements CartItemMapper {
 
         Book book = new Book();
 
-        book.setTitle( responseBookDto.getTitle() );
         book.setAuthor( responseBookDto.getAuthor() );
         book.setGroup( responseBookGroupDtoToBookGroup( responseBookDto.getGroup() ) );
         book.setPrice( responseBookDto.getPrice() );
+        book.setTitle( responseBookDto.getTitle() );
 
         return book;
     }
